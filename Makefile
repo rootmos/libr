@@ -1,24 +1,17 @@
-CC ?= cc
-LD ?= $(CC)
-CFLAGS = -Wall -Werror -I./include
-EXTRA_CFLAGS ?= -O2
-EXTRA_LDFLAGS ?=
 PREFIX ?= /usr/local
+TARGET_LIBS = src/libr.a
 
-libr.a: util.o logging.o fail.o mark.o stopwatch.o xorshift.o
-	ar -cr $@ $^
+build:
+	$(MAKE) -C src $@
 
-install: libr.a
+install: build
 	install -d $(PREFIX)/include/r
 	install -m 644 include/*.h $(PREFIX)/include
 	install -m 644 include/r/*.h $(PREFIX)/include/r
 	install -d $(PREFIX)/lib
-	install -m 644 $< $(PREFIX)/lib
-
-%.o: %.c
-	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -c $<
+	install -m 644 $(TARGET_LIBS) $(PREFIX)/lib
 
 clean:
-	rm -rf *.o *.a
+	$(MAKE) -C src $@
 
-.PHONY: install clean
+.PHONY: build install clean
