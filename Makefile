@@ -4,6 +4,9 @@ TARGET_LIBS = src/libr.a
 build:
 	$(MAKE) -C src $@
 
+test: build
+	$(MAKE) -C tests $@
+
 install: build
 	install -d $(PREFIX)/include/r
 	install -m 644 include/*.h $(PREFIX)/include
@@ -14,4 +17,4 @@ install: build
 clean:
 	$(MAKE) -C src $@
 
-.PHONY: build install clean
+.PHONY: build test install clean
