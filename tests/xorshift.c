@@ -3,10 +3,7 @@
 #include <string.h>
 #include <math.h>
 #include <assert.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <sys/wait.h>
-#include <unistd.h>
 
 #include <gsl/gsl_cdf.h>
 
@@ -52,40 +49,34 @@ static void normally_distributed(float (*f)(void))
     assert(chi2 <= gsl_cdf_chisq_Pinv(0.95, B));
 }
 
-void expect_abort(void (*test)(void))
-{
-    pid_t pid = fork(); CHECK(pid, "fork()");
-    if(pid == 0) test(), exit(0);
-
-    siginfo_t si;
-    pid_t w = waitid(P_PID, pid, &si, WEXITED | WSTOPPED); CHECK(w, "waitid");
-    assert(si.si_code == CLD_KILLED || si.si_code == CLD_DUMPED);
-    assert(si.si_status == SIGABRT);
-}
-
 void xorshift_tests(void)
 {
     xorshift_state_initalize();
 
-    uniformly_distributed(xorshift64_i);
-    uniformly_distributed(xorshift128plus_i);
-    normally_distributed(normal_dist_i);
+    TEST(xorshift64_is_uniform, {
+         uniformly_distributed(xorshift64_i);
+    });
 
-    void xorshift64_is_not_normal(void) {
+    TEST(xorshift128plus_is_uniform, {
+          uniformly_distributed(xorshift128plus_i);
+    });
+
+    TEST(normal_dist_is_normal, {
+          normally_distributed(normal_dist_i);
+    });
+
+    TEST_ABORT(xorshift64_is_not_normal, {
         float f() { return uniform_float(xorshift64_i()); }
         normally_distributed(f);
-    }
-    expect_abort(xorshift64_is_not_normal);
+    });
 
-    void normal_dist_is_not_uniform(void) {
+    TEST_ABORT(normal_dist_is_not_uniform, {
         uint64_t f() { return llrint(fabsf(normal_dist_i())); }
         uniformly_distributed(f);
-    }
-    expect_abort(normal_dist_is_not_uniform);
+    });
 
-    void normal_dist_test_should_respect_stddev(void) {
+    TEST_ABORT(normal_dist_test_should_respect_stddev, {
         float f() { return 2*normal_dist_i(); }
         normally_distributed(f);
-    }
-    expect_abort(normal_dist_test_should_respect_stddev);
+    });
 }
