@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <assert.h>
 #include <unistd.h>
+#include <math.h>
 
 #ifndef ENTROPY_SOURCE
 #define ENTROPY_SOURCE "/dev/urandom"
@@ -22,4 +23,16 @@ uint64_t xorshift_state[2];
 void xorshift_state_initalize(void)
 {
     random_bytes(xorshift_state, sizeof(xorshift_state));
+}
+
+float normal_dist(uint64_t* s)
+{
+    float x, y, r2;
+    do {
+        x = 2*uniform_float(xorshift64(s)) - 1;
+        y = 2*uniform_float(xorshift64(s)) - 1;
+        r2 = x*x + y*y;
+    } while(r2 > 1 || r2 == 0);
+
+    return x * sqrtf(-2*logf(r2)/r2);
 }

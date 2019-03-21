@@ -6,7 +6,7 @@ LDFLAGS = -L../src
 EXTRA_CFLAGS ?= -O2
 EXTRA_LDFLAGS ?=
 
-LIBS = -l:libr.a -lgsl -lgslcblas
+LIBS = -l:libr.a -lgsl -lgslcblas -lm
 
 TIMEOUT ?= 1s
 

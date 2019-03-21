@@ -30,12 +30,11 @@ void xorshift_state_initalize(void);
 inline static uint64_t xorshift64_i(void) { return xorshift64(xorshift_state); }
 inline static uint64_t xorshift128plus_i(void) { return xorshift128plus(xorshift_state); }
 
-static inline float normal_dist(uint64_t* seed)
+/* f = uniform_float(x) => 0 <= f < 1 */
+inline static float uniform_float(uint64_t x)
 {
-    float sum = 0; const size_t N = 6;
-    for(size_t i = 0; i < N; i++) {
-        uint64_t i = xorshift64(seed);
-        sum += (float)(int64_t)i/INT64_MAX;
-    }
-    return sum/N;
+    return (float)x/UINT64_MAX;
 }
+
+float normal_dist(uint64_t* s);
+inline static float normal_dist_i(void) { return normal_dist(xorshift_state); }
