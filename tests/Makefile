@@ -15,7 +15,7 @@ build: main
 test: main
 	timeout --preserve-status $(TIMEOUT) ./$<
 
-main: main.o xorshift.o
+main: main.o xorshift.o crc.o
 	$(LD) $(LDFLAGS) $(EXTRA_LDFLAGS) -o $@ $^ $(LIBS)
 
 %.o: %.c

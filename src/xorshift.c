@@ -20,7 +20,7 @@ void random_bytes(void* buf, size_t n)
 }
 
 uint64_t xorshift_state[2];
-void xorshift_state_initalize(void)
+void xorshift_state_initialize(void)
 {
     random_bytes(xorshift_state, sizeof(xorshift_state));
 }

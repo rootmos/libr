@@ -16,5 +16,6 @@ install: build
 
 clean:
 	$(MAKE) -C src $@
+	$(MAKE) -C tests $@
 
 .PHONY: build test install clean

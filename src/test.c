@@ -48,8 +48,6 @@ int test_runner(const char* name,
         r = close(captured_stderr[0]); CHECK(r, "close");
         r = dup2(captured_stderr[1], 2); CHECK(r, "dup2");
 
-        printf("lol!\n");
-
         body();
         exit(0);
     }

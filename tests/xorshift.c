@@ -51,7 +51,7 @@ static void normally_distributed(float (*f)(void))
 
 void xorshift_tests(void)
 {
-    xorshift_state_initalize();
+    xorshift_state_initialize();
 
     TEST(xorshift64_is_uniform, {
          uniformly_distributed(xorshift64_i);
