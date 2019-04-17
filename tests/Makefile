@@ -15,13 +15,13 @@ build: main
 test: main
 	timeout --preserve-status $(TIMEOUT) ./$<
 
-main: main.o xorshift.o crc.o
+main: main.o xorshift.o crc.o base32.o
 	$(LD) $(LDFLAGS) $(EXTRA_LDFLAGS) -o $@ $^ $(LIBS)
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -c $<
 
 clean:
-	rm -rf main *.o
+	rm -rf main *.o test.*.{stdout,stderr}
 
 .PHONY: build test clean

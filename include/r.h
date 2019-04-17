@@ -8,3 +8,4 @@
 #include <r/xorshift.h>
 #include <r/test.h>
 #include <r/crc.h>
+#include <r/base32.h>
