@@ -34,7 +34,7 @@ size_t base32_encode(char* out, const void* data, size_t l)
 ssize_t base32_decode(void* out, const char* data, size_t l)
 {
     size_t bs = 0;
-    for(size_t i = 0; l && *data != '='; l -= i, data += i, i = 0) {
+    for(size_t i = 0; l && *data && *data != '='; l -= i, data += i, i = 0) {
         uint64_t g = 0;
         for(; i < MIN(l, 8); i++) {
             uint64_t c = data[i];

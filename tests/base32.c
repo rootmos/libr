@@ -117,17 +117,18 @@ void base32_tests(void)
          assert(strncmp(buf, "foobarbazwoopwoop", sizeof(buf)) == 0);
     });
 
+    TEST(base32_round_trip_arbitrary_byte_string, {
+         for(size_t i = 0; i < 100; i++) {
+             uint16_t L; random_bytes(&L, sizeof(L));
+             char msg[L]; random_bytes(msg, sizeof(msg));
 
-    TEST(base32_round_trip_random_chunk, {
-         uint16_t L; random_bytes(&L, sizeof(L));
-         char msg[L]; random_bytes(msg, sizeof(msg));
+             char enc[BASE32_ENCODED_LENGTH(sizeof(msg))];
+             assert(base32_encode(enc, msg, L) == sizeof(enc));
 
-         char enc[BASE32_ENCODED_LENGTH(sizeof(msg))];
-         assert(base32_encode(enc, msg, L) == sizeof(enc));
+             char dec[L];
+             assert(base32_decode(dec, enc, sizeof(enc)) == L);
 
-         char dec[L];
-         assert(base32_decode(dec, enc, sizeof(enc)) == L);
-
-         assert(memcmp(msg, dec, L) == 0);
+             assert(memcmp(msg, dec, L) == 0);
+         }
     });
 }
