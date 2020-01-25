@@ -1,6 +1,7 @@
 #pragma once
 
 #define LENGTH(xs) (sizeof(xs)/sizeof((xs)[0]))
+#define LIT(x) x,sizeof(x)
 #define MAX(a,b) ((a) > (b) ? (a) : (b))
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
 

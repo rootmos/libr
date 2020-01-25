@@ -13,6 +13,8 @@
     } \
 } while(0)
 
+#define CHECK_MALLOC(x) CHECK_NOT(x, NULL, "memory allocation failed")
+
 #ifdef SND_LIB_VERSION
 #define CHECK_ALSA(err, format, ...) do { \
     if(err < 0) { \
