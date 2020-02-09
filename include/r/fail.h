@@ -35,6 +35,16 @@
 } while(0)
 #endif
 
+#ifdef FREETYPE_MAJOR
+#define CHECK_FT(err, format, ...) do { \
+    if(err != FT_Err_Ok) { \
+        r_failwith(__extension__ __FUNCTION__, __extension__ __FILE__, \
+                   __extension__ __LINE__, 0, \
+                   format ": (%d) %s\n", ##__VA_ARGS__, err, FT_Error_String(err)); \
+    } \
+} while(0)
+#endif
+
 #define failwith(format, ...) \
     r_failwith(__extension__ __FUNCTION__, __extension__ __FILE__, \
                __extension__ __LINE__, 0, format "\n", ##__VA_ARGS__)
