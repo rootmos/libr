@@ -45,6 +45,16 @@
 } while(0)
 #endif
 
+#ifdef VK_HEADER_VERSION
+#define CHECK_VULKAN(res, format, ...) do { \
+    if(res != VK_SUCCESS) { \
+        r_failwith(__extension__ __FUNCTION__, __extension__ __FILE__, \
+                   __extension__ __LINE__, 0, \
+                   format ": %d\n", ##__VA_ARGS__, res); \
+    } \
+} while(0)
+#endif
+
 #define failwith(format, ...) \
     r_failwith(__extension__ __FUNCTION__, __extension__ __FILE__, \
                __extension__ __LINE__, 0, format "\n", ##__VA_ARGS__)
