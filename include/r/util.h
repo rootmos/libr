@@ -9,3 +9,5 @@ const char* getenv_mandatory(const char* const env);
 
 // returns current time formated as compact ISO8601: 20190123T182628Z
 const char* now_iso8601(void);
+
+void set_blocking(int fd, int blocking);
