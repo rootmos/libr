@@ -55,6 +55,16 @@
 } while(0)
 #endif
 
+#ifdef AVERROR
+#define CHECK_AV(res, format, ...) do { \
+    if(res < 0) { \
+        r_failwith(__extension__ __FUNCTION__, __extension__ __FILE__, \
+                   __extension__ __LINE__, 0, \
+                   format ": %s\n", ##__VA_ARGS__, av_err2str(res)); \
+    } \
+} while(0)
+#endif
+
 #define failwith(format, ...) \
     r_failwith(__extension__ __FUNCTION__, __extension__ __FILE__, \
                __extension__ __LINE__, 0, format "\n", ##__VA_ARGS__)
