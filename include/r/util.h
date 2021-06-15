@@ -2,8 +2,14 @@
 
 #define LENGTH(xs) (sizeof(xs)/sizeof((xs)[0]))
 #define LIT(x) x,sizeof(x)
+
+#ifndef MAX
 #define MAX(a,b) ((a) > (b) ? (a) : (b))
+#endif
+
+#ifndef MIN
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
+#endif
 
 const char* getenv_mandatory(const char* const env);
 
