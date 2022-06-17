@@ -7,7 +7,6 @@
 set -o nounset -o pipefail -o errexit
 
 URL=${URL-https://github.com/rootmos/libr}
-VERSION=${VERSION-$(git rev-parse HEAD)}
 OUTPUT=/dev/stdout
 while getopts "o:-" OPT; do
     case $OPT in
@@ -20,6 +19,7 @@ shift $((OPTIND-1))
 
 SCRIPT_DIR=$(readlink -f "$0" | xargs dirname)
 BASE_DIR=${BASE_DIR-$SCRIPT_DIR}
+VERSION=${VERSION-$(git -C "$BASE_DIR" rev-parse HEAD)}
 SRC=${SRC-$BASE_DIR/src}
 INC=${INC-$BASE_DIR/include/r}
 
