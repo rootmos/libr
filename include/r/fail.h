@@ -65,6 +65,16 @@
 } while(0)
 #endif
 
+#ifdef LUA_VERSION
+#define CHECK_LUA(L, err, format, ...) do { \
+    if(err != LUA_OK) { \
+        r_failwith(__extension__ __FUNCTION__, __extension__ __FILE__, \
+                   __extension__ __LINE__, 0, \
+                   format ": %s\n", ##__VA_ARGS__, lua_tostring(L, -1)); \
+    } \
+} while(0)
+#endif
+
 #define failwith(format, ...) \
     r_failwith(__extension__ __FUNCTION__, __extension__ __FILE__, \
                __extension__ __LINE__, 0, format "\n", ##__VA_ARGS__)
