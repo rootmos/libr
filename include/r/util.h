@@ -17,3 +17,4 @@ const char* getenv_mandatory(const char* const env);
 const char* now_iso8601(void);
 
 void set_blocking(int fd, int blocking);
+void no_new_privs(void);
