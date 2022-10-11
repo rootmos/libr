@@ -71,10 +71,10 @@ int landlock_new_ruleset(void)
     return rsfd;
 }
 
-void landlock_allow_read_file(int rsfd, const char* path)
+void landlock_allow(int rsfd, const char* path, __u64 allowed_access)
 {
     struct landlock_path_beneath_attr pb = {
-        .allowed_access = LANDLOCK_ACCESS_FS_READ_FILE,
+        .allowed_access = allowed_access,
     };
 
     pb.parent_fd = open(path, __O_PATH|O_CLOEXEC);
@@ -84,6 +84,23 @@ void landlock_allow_read_file(int rsfd, const char* path)
     CHECK(r, "landlock_add_rule");
 
     r = close(pb.parent_fd); CHECK(r, "close(%s)", path);
+}
+
+void landlock_allow_read(int rsfd, const char* path)
+{
+    landlock_allow(rsfd, path,
+        LANDLOCK_ACCESS_FS_READ_FILE
+    );
+}
+
+void landlock_allow_read_write(int rsfd, const char* path)
+{
+    landlock_allow(rsfd, path,
+        LANDLOCK_ACCESS_FS_READ_FILE
+      | LANDLOCK_ACCESS_FS_WRITE_FILE
+      | LANDLOCK_ACCESS_FS_MAKE_REG
+      | LANDLOCK_ACCESS_FS_REMOVE_FILE
+    );
 }
 
 void landlock_apply(int fd)

@@ -1,4 +1,4 @@
-#include <r.h>
+#include "r/crc.h"
 
 #define CRC16_CCITT_POLY 0x1021
 
