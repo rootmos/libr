@@ -18,7 +18,11 @@
           __extension__ __LINE__, format "\n", ##__VA_ARGS__); \
 } while(0)
 
+#ifdef __cplusplus
+void r_dummy(...);
+#else
 void r_dummy();
+#endif
 
 #if LOG_LEVEL >= LOG_ERROR
 #define error(format, ...) __r_log(LOG_ERROR, format, ##__VA_ARGS__)

@@ -5,7 +5,11 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#ifdef __cplusplus
+void r_dummy(...)
+#else
 void r_dummy()
+#endif
 {
     failwith("called the dummy function, you dummy!");
 }
