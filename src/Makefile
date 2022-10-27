@@ -8,7 +8,7 @@ EXTRA_LDFLAGS ?=
 build: libr.a
 
 libr.a: util.o logging.o fail.o mark.o stopwatch.o xorshift.o test.o crc.o \
-	base32.o landlock.o lua.o
+	base32.o landlock.o lua.o uv.o
 	ar -cr $@ $^
 
 %.o: %.c
