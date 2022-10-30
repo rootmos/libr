@@ -7,6 +7,7 @@
 #include <r/logging.h>
 #include <r/lua.h>
 #include <r/mark.h>
+#include <r/rlimit.h>
 #include <r/stopwatch.h>
 #include <r/test.h>
 #include <r/util.h>

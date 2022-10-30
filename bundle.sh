@@ -66,6 +66,9 @@ depends "logging" "util"
 depends "landlock" "fail"
 depends "lua" "fail"
 depends "uv" "fail"
+depends "rlimit" "fail"
+depends "rlimit" "logging"
+depends "rlimit" "util"
 
 readarray -t MODULES < "$TMP/choices"
 
