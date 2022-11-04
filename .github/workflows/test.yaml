@@ -1,0 +1,21 @@
+name: Build and test
+on: [ push ]
+
+jobs:
+  ubuntu:
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:base-devel
+    steps:
+    - name: Install dependencies
+      run: |
+        pacman -Suy --noconfirm
+        pacman -S --noconfirm git gcc make python
+
+    - name: Check out repository code
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Run tests
+      run: make
