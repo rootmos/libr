@@ -105,7 +105,11 @@ def load_modules(spec, args):
     modules = {}
     for n, m in spec["module"].items():
         hdr = os.path.join(args.include, f"{n}.h")
+
         src = os.path.join(args.src, f"{n}.c")
+        if not os.path.exists(src):
+            src = None
+
         test = os.path.join(args.tests, f"{n}.c")
         if not os.path.exists(test):
             test = None
@@ -148,6 +152,8 @@ def select_modules(modules, selection):
 gnu_source_re = re.compile(r'^#define\s+_GNU_SOURCE')
 def gnu_source(modules):
     for m in modules:
+        if m.src is None:
+            continue
         with open(m.src, "r") as h:
             for l in h.readlines():
                 if gnu_source_re.match(l):
@@ -184,6 +190,8 @@ def assemble_modules(modules, output):
         f.write(f"#ifdef {meta.implementation_guard}\n".encode("UTF-8"))
         r_include = re.compile(r'^#include\s+"[^"]+"')
         for m in modules:
+            if m.src is None:
+                continue
             f.write(f"\n// {meta.name} {os.path.basename(m.src)}\n".encode("UTF-8"))
             with open(m.src, "r") as h:
                 for l in h.readlines():
