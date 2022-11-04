@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import argparse
 import datetime
@@ -8,8 +8,13 @@ import re
 import subprocess
 import sys
 import tempfile
-import toml
 import shlex
+import shutil
+
+try:
+    import toml
+except ModuleNotFoundError:
+    import tomlkit as toml
 
 def or_list(x):
     if x is None:
@@ -68,6 +73,10 @@ class GitInfo:
         logger.debug(f"git url: {self.url}")
 
     def make(target):
+        if not shutil.which(GitInfo.GIT):
+            logger.debug("git not available")
+            return None
+
         p = subprocess.run([GitInfo.GIT, "-C", target, "rev-parse", "--show-toplevel"], capture_output=True, text=True)
         if p.returncode != 0:
             logger.warn(f"unable to figure out git context: {p.stderr}")
