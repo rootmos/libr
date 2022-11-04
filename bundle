@@ -195,6 +195,7 @@ def assemble_modules(modules, output):
         f.seek(0)
         output.write(f.read())
 
+c_suffix = re.compile(r"\.c$")
 def compilation_test_modules(modules, args):
     meta = modules[0].meta
     logger.info(f"compilation testing modules: {modules}")
@@ -213,7 +214,7 @@ def compilation_test_modules(modules, args):
             f.write(f'#include "{hdr}"\n\n')
             f.write('int main(int argc, char* argv[]) { return 0; }\n')
 
-        exe = compilation_test_src.removesuffix(".c")
+        exe = c_suffix.sub("", compilation_test_src)
         cmdline = [args.cc] + shlex.split(args.cflags) + ["-o", exe, compilation_test_src]
         for m in modules:
             for l in m.libs:
