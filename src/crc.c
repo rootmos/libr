@@ -1,5 +1,3 @@
-#include "r/crc.h"
-
 #define CRC16_CCITT_POLY 0x1021
 
 // https://en.wikipedia.org/wiki/Computation_of_cyclic_redundancy_checks#Bit_ordering_(endianness)

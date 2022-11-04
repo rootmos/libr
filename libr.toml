@@ -9,14 +9,16 @@ depends = [ "fail", "util" ]
 [module.fail]
 depends = "logging"
 
+[module.xorshift]
+depends = "fail"
+libs = "m"
+test-pkg = "gsl"
+
 [module.crc]
 
 [module.base32]
 depends = "util"
-
-[module.xorshift]
-depends = "fail"
-libs = [ "m" ]
+test-depends = "xorshift"
 
 [module.stopwatch]
 depends = [ "fail", "logging" ]

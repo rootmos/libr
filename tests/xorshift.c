@@ -1,10 +1,4 @@
-#include <r.h>
-
-#include <string.h>
 #include <math.h>
-#include <assert.h>
-#include <stdlib.h>
-
 #include <gsl/gsl_cdf.h>
 
 static void uniformly_distributed(uint64_t (*f)(void))
@@ -49,7 +43,7 @@ static void normally_distributed(float (*f)(void))
     assert(chi2 <= gsl_cdf_chisq_Pinv(0.95, B));
 }
 
-void xorshift_tests(void)
+int main(int argc, char* argv[])
 {
     xorshift_state_initialize();
 
@@ -79,4 +73,6 @@ void xorshift_tests(void)
         float f() { return 2*normal_dist_i(); }
         normally_distributed(f);
     });
+
+    return 0;
 }
