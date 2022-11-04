@@ -1,21 +1,12 @@
-PREFIX ?= /usr/local
-TARGET_LIBS = src/libr.a
+BUNDLER ?= ./bundle
 
-build:
-	$(MAKE) -C src $@
+.PHONY: test
+test: \
+	$(foreach m, $(shell $(BUNDLER) list), compilation-test.$(m)) \
+	$(foreach m, $(shell $(BUNDLER) list --has-test), test.$(m))
 
-test: build
-	$(MAKE) -C tests $@
+test.%:
+	$(BUNDLER) test $*
 
-install: build
-	install -d $(PREFIX)/include/r
-	install -m 644 include/*.h $(PREFIX)/include
-	install -m 644 include/r/*.h $(PREFIX)/include/r
-	install -d $(PREFIX)/lib
-	install -m 644 $(TARGET_LIBS) $(PREFIX)/lib
-
-clean:
-	$(MAKE) -C src $@
-	$(MAKE) -C tests $@
-
-.PHONY: build test install clean
+compilation-test.%:
+	$(BUNDLER) compilation-test $*

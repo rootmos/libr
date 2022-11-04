@@ -1,8 +1,8 @@
-#define _GNU_SOURCE
 #include "r/test.h"
 #include "r/util.h"
 #include "r/fail.h"
 
+#define _GNU_SOURCE
 #include <fcntl.h>
 #include <sys/wait.h>
 #include <stdio.h>

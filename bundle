@@ -1,0 +1,382 @@
+#!/usr/bin/env python3
+
+import argparse
+import datetime
+import logging
+import os
+import re
+import subprocess
+import sys
+import tempfile
+import shlex
+import shutil
+
+try:
+    import toml
+except ModuleNotFoundError:
+    import tomlkit as toml
+
+def or_list(x):
+    if x is None:
+        return None
+    elif not isinstance(x, list):
+        return [ x ]
+    return x
+
+class Module:
+    def __init__(self, name, hdr, src, test, libs, test_libs, pkg, test_pkg, meta):
+        self.name = name
+        self.hdr = hdr
+        self.src = src
+        self.test = test
+        self.meta = meta
+
+        self.libs = or_list(libs)
+        self.test_libs = or_list(test_libs)
+        self.pkg = or_list(pkg)
+        self.test_pkg = or_list(test_pkg)
+
+        self.depends = []
+        self.test_depends = []
+
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return self.name
+
+class GitInfo:
+    GIT = os.environ.get("GIT", "git")
+
+    def __init__(self, root):
+        self.root = root
+
+        p = subprocess.run([GitInfo.GIT, "-C", root, "rev-parse", "HEAD"], capture_output=True, text=True, check=True)
+        self.ref = p.stdout.splitlines()[0]
+        logger.debug(f"git ref: {self.ref}")
+
+        p = subprocess.run([GitInfo.GIT, "-C", root, "status", "--porcelain"], capture_output=True, text=True, check=True)
+        self.dirty = len(p.stdout.splitlines()) > 0
+        logger.debug(f"git dirty: {self.dirty}")
+
+        p = subprocess.run([GitInfo.GIT, "-C", root, "remote"], capture_output=True, text=True, check=True)
+        remote = p.stdout.splitlines()[0]
+
+        p = subprocess.run([GitInfo.GIT, "-C", root, "remote", "get-url", remote], capture_output=True, text=True, check=True)
+        upstream = p.stdout.splitlines()[0]
+        logger.debug(f"git upstream (remote): {upstream}")
+
+        if upstream.startswith("git@github.com:"):
+            self.url = upstream.replace("git@github.com:", "https://github.com/")
+        else:
+            self.url = upstream
+        logger.debug(f"git url: {self.url}")
+
+    def make(target):
+        if not shutil.which(GitInfo.GIT):
+            logger.debug("git not available")
+            return None
+
+        p = subprocess.run([GitInfo.GIT, "-C", target, "rev-parse", "--show-toplevel"], capture_output=True, text=True)
+        if p.returncode != 0:
+            logger.warn(f"unable to figure out git context: {p.stderr}")
+            return None
+        root = p.stdout.splitlines()[0]
+        logger.debug(f"git root: {root}")
+
+        return GitInfo(root=root)
+
+class Meta:
+    def __init__(self, spec, args):
+        self.version = spec["version"]
+
+        self.name = spec.get("name")
+        if self.name is None:
+            self.name = os.path.basename(args.root)
+
+        self.include_guard = spec.get("include_guard", f"{self.name.upper()}_HEADER")
+        self.implementation_guard = spec.get("implementation_guard", f"{self.name.upper()}_IMPLEMENTATION")
+
+        self.git = GitInfo.make(args.root)
+
+def load_modules(spec, args):
+    meta = Meta(spec, args)
+
+    modules = {}
+    for n, m in spec["module"].items():
+        hdr = os.path.join(args.include, f"{n}.h")
+
+        src = os.path.join(args.src, f"{n}.c")
+        if not os.path.exists(src):
+            src = None
+
+        test = os.path.join(args.tests, f"{n}.c")
+        if not os.path.exists(test):
+            test = None
+
+        modules[n] = Module(
+            name=n,
+            hdr=hdr, src=src, test=test,
+            libs=m.get("libs", []), test_libs=m.get("test-libs", []),
+            pkg=m.get("pkg"), test_pkg=m.get("test-pkg"),
+            meta=meta
+        )
+
+    for n, m in modules.items():
+        depends = spec["module"][n].get("depends", [])
+        if not isinstance(depends, list):
+            depends = [ depends ]
+        m.depends = [ modules[d] for d in depends ]
+
+        test_depends = spec["module"][n].get("test-depends", [])
+        if not isinstance(test_depends, list):
+            test_depends = [ test_depends ]
+        m.test_depends = [ modules[d] for d in test_depends ]
+
+    return modules
+
+def select_modules(modules, selection):
+    logger.debug(f"selecting modules: {selection}")
+    ms = {}
+    def go(m):
+        if m.name not in ms:
+            ms[m.name] = m
+            for d in m.depends:
+                go(d)
+
+    for s in selection:
+        go(modules[s])
+
+    return list(ms.values())
+
+gnu_source_re = re.compile(r'^#define\s+_GNU_SOURCE')
+def gnu_source(modules):
+    for m in modules:
+        if m.src is None:
+            continue
+        with open(m.src, "r") as h:
+            for l in h.readlines():
+                if gnu_source_re.match(l):
+                    return True
+    return False
+
+def assemble_modules(modules, output):
+    meta = modules[0].meta
+
+    with tempfile.TemporaryFile() as f:
+        when = datetime.datetime.now().astimezone().isoformat(timespec="seconds")
+        version = f"{meta.version}"
+        if meta.git:
+            if meta.git.dirty:
+                version += f" ({meta.git.ref} dirty)"
+            else:
+                version += f" ({meta.git.ref})"
+
+            version += f" ({meta.git.url})"
+        f.write(f"// {meta.name} {version} ({when})\n".encode("UTF-8"))
+        f.write(f"// modules: {' '.join([m.name for m in modules])}\n\n".encode("UTF-8"))
+
+        f.write(f"#ifndef {meta.include_guard}\n".encode("UTF-8"))
+        f.write(f"#define {meta.include_guard}\n".encode("UTF-8"))
+        for m in modules:
+            f.write(f"\n// {meta.name}: {os.path.basename(m.hdr)}\n".encode("UTF-8"))
+            with open(m.hdr, "r") as h:
+                for l in h.readlines():
+                    if l.startswith("#pragma once"):
+                        continue
+                    f.write(l.encode("UTF-8"))
+        f.write(f"#endif // {meta.include_guard}\n\n".encode("UTF-8"))
+
+        f.write(f"#ifdef {meta.implementation_guard}\n".encode("UTF-8"))
+        r_include = re.compile(r'^#include\s+"[^"]+"')
+        for m in modules:
+            if m.src is None:
+                continue
+            f.write(f"\n// {meta.name}: {os.path.basename(m.src)}\n".encode("UTF-8"))
+            with open(m.src, "r") as h:
+                for l in h.readlines():
+                    if r_include.match(l) or gnu_source_re.match(l):
+                        continue
+                    f.write(l.encode("UTF-8"))
+        f.write(f"#endif // {meta.implementation_guard}\n".encode("UTF-8"))
+
+        f.seek(0)
+        output.write(f.read())
+
+c_suffix = re.compile(r"\.c$")
+def compilation_test_modules(modules, args):
+    meta = modules[0].meta
+    logger.info(f"compilation testing modules: {modules}")
+
+    with tempfile.TemporaryDirectory() as tmp:
+        hdr = "r.h"
+        with open(os.path.join(tmp, hdr), "wb") as f:
+            assemble_modules(modules, f)
+
+        compilation_test_src = os.path.join(tmp, "compilation_test.c")
+        with open(compilation_test_src, "w") as f:
+            if gnu_source(modules):
+                logger.debug("gnu source detected")
+                f.write(f'#define _GNU_SOURCE\n')
+            f.write(f'#define {meta.implementation_guard}\n')
+            f.write(f'#include "{hdr}"\n\n')
+            f.write('int main(int argc, char* argv[]) { return 0; }\n')
+
+        exe = c_suffix.sub("", compilation_test_src)
+        cmdline = [args.cc] + shlex.split(args.cflags) + ["-o", exe, compilation_test_src]
+        for m in modules:
+            for l in m.libs:
+                cmdline += [f"-l{l}"]
+        logger.debug(f"compiling: {cmdline}")
+        subprocess.run(cmdline, check=True, cwd=tmp)
+
+        logger.debug(f"running compiled binary: {exe}")
+        subprocess.run(exe, check=True, cwd=tmp)
+
+def test_module(module, modules, args):
+    logger.info(f"testing module: {module}")
+    if module.test is None:
+        logger.warn("no tests available")
+        return
+
+    meta = module.meta
+    modules = select_modules(modules, [module.name, "test"] + [td.name for td in module.test_depends])
+    logger.debug(f"running with test dependencies: {modules}")
+
+    with tempfile.TemporaryDirectory() as tmp:
+        hdr = "r.h"
+        with open(os.path.join(tmp, hdr), "wb") as f:
+            assemble_modules(modules, f)
+
+        test_src = os.path.join(tmp, "test.c")
+        with open(test_src, "w") as f:
+            if gnu_source(modules):
+                logger.debug("gnu source detected")
+                f.write(f'#define _GNU_SOURCE\n')
+            f.write(f'#define {meta.implementation_guard}\n')
+            f.write(f'#include "{hdr}"\n\n')
+
+            logger.debug(f"test driver: {module.test}")
+            with open(module.test, "r") as g:
+                f.write(g.read())
+
+        exe = test_src.removesuffix(".c")
+        cflags = shlex.split(args.cflags)
+        cflags += ["-Wa,--noexecstack"]
+        ldflags = []
+        for m in modules:
+            pkg = (m.pkg or []) + (m.test_pkg or [])
+            if not pkg: continue
+            p = subprocess.run([args.pkg_config, "--cflags"] + pkg, check=True, capture_output=True, text=True)
+            cflags += shlex.split(p.stdout.splitlines()[0])
+            p = subprocess.run([args.pkg_config, "--libs"] + pkg, check=True, capture_output=True, text=True)
+            ldflags += shlex.split(p.stdout.splitlines()[0])
+        cmdline = [args.cc] + cflags + ["-o", exe, test_src] + ldflags
+        for m in modules:
+            for l in m.libs + m.test_libs:
+                cmdline += [f"-l{l}"]
+        logger.debug(f"compiling: {cmdline}")
+        subprocess.run(cmdline, check=True, cwd=tmp)
+
+        logger.debug(f"running compiled binary: {exe}")
+        subprocess.run(exe, check=True, cwd=tmp)
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Single file bundler")
+
+    parser.add_argument("--log", default=os.environ.get("LOG_LEVEL", "WARN"), help="set log level")
+
+    parser.add_argument("--root", default=os.environ.get("ROOT", os.path.dirname(os.path.realpath(__file__))))
+    parser.add_argument("--src", default=os.environ.get("SRC"))
+    parser.add_argument("--include", default=os.environ.get("INCLUDE"))
+    parser.add_argument("--tests", default=os.environ.get("TESTS"))
+
+    subparsers = parser.add_subparsers(dest="cmd")
+
+    list_cmd = subparsers.add_parser("list")
+    list_cmd.add_argument("-t", "--has-test", action="store_true")
+    list_cmd.add_argument("selection", metavar="MODULE", nargs="*")
+
+    assemble_cmd = subparsers.add_parser("assemble")
+    assemble_cmd.add_argument("-o", "--output", default=os.environ.get("OUTPUT"))
+    assemble_cmd.add_argument("selection", metavar="MODULE", nargs="+")
+
+    def add_cc(p):
+        p.add_argument("-c", "--cc", default=os.getenv("CC", "gcc"))
+        p.add_argument("--pkg-config", default=os.getenv("PKG_CONFIG", "pkg-config"))
+        p.add_argument("--cflags", default="-Wall -Werror")
+
+    compilation_test_cmd = subparsers.add_parser("compilation-test")
+    add_cc(compilation_test_cmd)
+    compilation_test_cmd.add_argument("selection", metavar="MODULE", nargs="+")
+
+    test_cmd = subparsers.add_parser("test")
+    add_cc(test_cmd)
+    test_cmd.add_argument("module", metavar="MODULE")
+
+    args = parser.parse_args()
+
+    if args.src is None:
+        args.src = os.path.join(args.root, "src")
+
+    if args.include is None:
+        args.include = os.path.join(args.root, os.path.join("include", "r"))
+
+    if args.tests is None:
+        args.tests = os.path.join(args.root, "tests")
+
+    return args
+
+logger = None
+def setup_logger(level):
+    l = logging.getLogger("bundle")
+    l.setLevel(level)
+
+    ch = logging.StreamHandler()
+    ch.setLevel(level)
+
+    f = logging.Formatter(
+        fmt="%(asctime)s:%(name)s:%(levelname)s %(message)s",
+        datefmt="%Y-%m-%dT%H:%M:%S%z")
+    ch.setFormatter(f)
+
+    l.addHandler(ch)
+
+    return l
+
+if __name__ == "__main__":
+    args = parse_args()
+    logger = setup_logger(args.log.upper())
+    logger.debug(f"args: {args}")
+
+    with open(os.path.join(args.root, "libr.toml"), "r") as f:
+        spec = toml.load(f)
+        logger.debug(f"spec: {spec}")
+        modules = load_modules(spec, args)
+
+    if args.cmd == "list":
+        def go(m):
+            if args.has_test:
+                if m.test is not None:
+                    print(m.name)
+            else:
+                print(m.name)
+
+        if args.selection:
+            for m in select_modules(modules, args.selection):
+                go(m)
+        else:
+            for m in modules.values():
+                go(m)
+    elif args.cmd == "assemble":
+        selection = select_modules(modules, args.selection)
+        if args.output:
+            output = open(args.output, "wb")
+        else:
+            output = sys.stdout.buffer
+        assemble_modules(selection, output=output)
+    elif args.cmd == "compilation-test":
+        selection = select_modules(modules, args.selection)
+        compilation_test_modules(selection, args)
+    elif args.cmd == "test":
+        test_module(modules[args.module], modules, args)

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <unistd.h>
+#include <stdint.h>
 
 // https://tools.ietf.org/html/rfc4648
 

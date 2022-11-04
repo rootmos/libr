@@ -1,10 +1,4 @@
-#include <r.h>
-
-#include <assert.h>
-#include <stdlib.h>
-#include <string.h>
-
-void base32_tests(void)
+int main(int argc, char* argv[])
 {
     TEST(base32_encode_empty, {
          char enc[1];
@@ -131,4 +125,6 @@ void base32_tests(void)
              assert(memcmp(msg, dec, L) == 0);
          }
     });
+
+    return 0;
 }

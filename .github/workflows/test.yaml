@@ -1,0 +1,21 @@
+name: Build and test
+on: [ push ]
+
+jobs:
+  ubuntu:
+    runs-on: ubuntu-22.04
+    steps:
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends \
+          git gcc make \
+          python3 python3-tomlkit
+
+    - name: Check out repository code
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Run tests
+      run: make test
