@@ -9,6 +9,11 @@ depends = [ "fail", "util" ]
 [module.fail]
 depends = "logging"
 
+[module.crc]
+
+[module.base32]
+depends = "util"
+
 [module.xorshift]
 depends = "fail"
 libs = [ "m" ]
