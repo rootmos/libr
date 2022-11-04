@@ -10,7 +10,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y --no-install-recommends \
           git gcc make \
-          python3 python3-venv
+          python3 python3-tomlkit
 
     - name: Check out repository code
       uses: actions/checkout@v3
@@ -18,4 +18,4 @@ jobs:
         fetch-depth: 0
 
     - name: Run tests
-      run: tools/with-python-venv make
+      run: make test
