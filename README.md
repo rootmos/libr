@@ -2,21 +2,21 @@
 [![Build and test](https://github.com/rootmos/libr/actions/workflows/test.yaml/badge.svg)](https://github.com/rootmos/libr/actions/workflows/test.yaml)
 
 ## Modules
-- *util*: LENGTH, LIT, MAX, MIN macros
-- *now*: current time in ISO8601 format
-- *logging*
-- *fail*
-- *xorshift*: implementation of xorshift64 and xorshift128+
-- *crc*: implementation of CRC16-ccitt
-- *base32*: implementation of the RFC4648 Base32 encoding
-- *stopwatch*
-- *mark*
-- *test*
-- *file*
-- *landlock*: Linux landlock syscalls and helpers
-- *lua*
-- *uv*
-- *rlimit*: apply strict rlimits
-- *env*: getenv wrappers
-- *no_new_privs*: prctl(PR_SET_NO_NEW_PRIVS) helper
-- *nonblock*: helper to set/unset O_NONBLOCK flag
+- **util**: LENGTH, LIT, MAX, MIN macros<br> [.h](modules/util.h)
+- **now**: current time in ISO8601 format<br> [.h](modules/now.h) [.c](modules/now.c) [wiki](https://en.wikipedia.org/wiki/ISO_8601)
+- **logging**<br> [.h](modules/logging.h) [.c](modules/logging.c)
+- **fail**<br> [.h](modules/fail.h) [.c](modules/fail.c)
+- **xorshift**: implementation of xorshift64 and xorshift128+<br> [.h](modules/xorshift.h) [.c](modules/xorshift.c) [.test.c](modules/xorshift.test.c) [wiki](https://en.wikipedia.org/wiki/Xorshift)
+- **crc**: implementation of CRC16-ccitt<br> [.h](modules/crc.h) [.c](modules/crc.c) [.test.c](modules/crc.test.c) [wiki](https://en.wikipedia.org/wiki/Computation_of_cyclic_redundancy_checks)
+- **base32**: implementation of the RFC4648 Base32 encoding<br> [.h](modules/base32.h) [.c](modules/base32.c) [.test.c](modules/base32.test.c) [reference](https://datatracker.ietf.org/doc/html/rfc4648)
+- **stopwatch**<br> [.h](modules/stopwatch.h) [.c](modules/stopwatch.c)
+- **mark**<br> [.h](modules/mark.h) [.c](modules/mark.c)
+- **test**<br> [.h](modules/test.h) [.c](modules/test.c)
+- **file**<br> [.h](modules/file.h) [.c](modules/file.c)
+- **landlock**: Linux landlock syscalls and helpers<br> [.h](modules/landlock.h) [.c](modules/landlock.c) [reference](https://www.kernel.org/doc/html/latest/userspace-api/landlock.html)
+- **lua**<br> [.h](modules/lua.h)
+- **uv**<br> [.h](modules/uv.h)
+- **rlimit**: apply strict rlimits<br> [.h](modules/rlimit.h) [.c](modules/rlimit.c) [man](https://man.archlinux.org/man/setrlimit.2.en)
+- **env**: getenv wrappers<br> [.h](modules/env.h) [.c](modules/env.c) [man](https://man.archlinux.org/man/getenv.3.en)
+- **no_new_privs**: prctl(PR_SET_NO_NEW_PRIVS) helper<br> [.h](modules/no_new_privs.h) [.c](modules/no_new_privs.c) [reference](https://www.kernel.org/doc/html/latest/userspace-api/no_new_privs.html) [man](https://man.archlinux.org/man/prctl.2.en)
+- **nonblock**: helper to set/unset O_NONBLOCK flag<br> [.h](modules/nonblock.h) [.c](modules/nonblock.c) [man](https://man.archlinux.org/man/fcntl.2.en)
