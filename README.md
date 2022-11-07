@@ -59,3 +59,4 @@ says hello:
 - **env**: getenv wrappers<br> [.h](modules/env.h) [.c](modules/env.c) [man](https://man.archlinux.org/man/getenv.3.en)
 - **no_new_privs**: prctl(PR_SET_NO_NEW_PRIVS) helper<br> [.h](modules/no_new_privs.h) [.c](modules/no_new_privs.c) [reference](https://www.kernel.org/doc/html/latest/userspace-api/no_new_privs.html) [man](https://man.archlinux.org/man/prctl.2.en#PR_SET_NO_NEW_PRIVS)
 - **nonblock**: helper to set/unset O_NONBLOCK flag<br> [.h](modules/nonblock.h) [.c](modules/nonblock.c) [man](https://man.archlinux.org/man/fcntl.2.en#F_SETFL)
+- **char**: helpers to interpret ASCII characters<br> [.h](modules/char.h)

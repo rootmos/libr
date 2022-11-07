@@ -75,3 +75,6 @@ depends = "fail"
 description = "helper to set/unset O_NONBLOCK flag"
 man = 'fcntl(2)#F_SETFL'
 depends = "fail"
+
+[module.char]
+description = "helpers to interpret ASCII characters"
