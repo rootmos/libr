@@ -44,7 +44,7 @@ says hello:
 - **util**: LENGTH, LIT, MAX, MIN macros<br> [.h](modules/util.h)
 - **now**: current time in ISO8601 format<br> [.h](modules/now.h) [.c](modules/now.c) [wiki](https://en.wikipedia.org/wiki/ISO_8601)
 - **logging**<br> [.h](modules/logging.h) [.c](modules/logging.c)
-- **fail**<br> [.h](modules/fail.h) [.c](modules/fail.c)
+- **fail**: abort-based error handling<br> [.h](modules/fail.h) [.c](modules/fail.c) [man](https://man.archlinux.org/man/abort.3.en)
 - **xorshift**: implementation of xorshift64 and xorshift128+<br> [.h](modules/xorshift.h) [.c](modules/xorshift.c) [.test.c](modules/xorshift.test.c) [wiki](https://en.wikipedia.org/wiki/Xorshift)
 - **crc**: implementation of CRC16-ccitt<br> [.h](modules/crc.h) [.c](modules/crc.c) [.test.c](modules/crc.test.c) [wiki](https://en.wikipedia.org/wiki/Computation_of_cyclic_redundancy_checks)
 - **base32**: implementation of the RFC4648 Base32 encoding<br> [.h](modules/base32.h) [.c](modules/base32.c) [.test.c](modules/base32.test.c) [reference](https://datatracker.ietf.org/doc/html/rfc4648)

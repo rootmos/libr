@@ -11,6 +11,8 @@ wiki = 'https://en.wikipedia.org/wiki/ISO_8601'
 depends = [ "now" ]
 
 [module.fail]
+description = "abort-based error handling"
+man = "abort(3)"
 depends = "logging"
 
 [module.xorshift]
