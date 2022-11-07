@@ -1,5 +1,5 @@
-#include "r/fail.h"
-#include "r/util.h"
+#include "fail.h"
+#include "util.h"
 
 #include <fcntl.h>
 #include <unistd.h>

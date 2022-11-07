@@ -1,3 +1,5 @@
+#include <assert.h>
+
 int main(int argc, char* argv[])
 {
     TEST(crc16_ccitt_empty, {

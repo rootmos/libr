@@ -1,6 +1,7 @@
-#include "r/test.h"
-#include "r/util.h"
-#include "r/fail.h"
+#include "test.h"
+#include "now.h"
+#include "fail.h"
+#include "util.h"
 
 #define _GNU_SOURCE
 #include <fcntl.h>
@@ -33,7 +34,7 @@ int test_runner(const char* name,
                 int expect_signal,
                 int expect_exit_code)
 {
-    const char* now = now_iso8601();
+    const char* now = now_iso8601_compact();
 
     int r;
 

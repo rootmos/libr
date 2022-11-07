@@ -1,5 +1,5 @@
-#include "r/xorshift.h"
-#include "r/fail.h"
+#include "xorshift.h"
+#include "fail.h"
 
 #include <fcntl.h>
 #include <assert.h>

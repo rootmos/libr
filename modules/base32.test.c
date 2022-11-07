@@ -1,3 +1,5 @@
+#include <assert.h>
+
 int main(int argc, char* argv[])
 {
     TEST(base32_encode_empty, {
