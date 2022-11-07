@@ -93,3 +93,8 @@ depends = "fail"
 
 [module.char]
 description = "helpers to interpret ASCII characters"
+
+[module.devnull]
+description = "/dev/null as a filedescriptor"
+man = 'zero(4)'
+depends = "fail"
