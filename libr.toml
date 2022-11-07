@@ -5,7 +5,7 @@ description = "LENGTH, LIT, MAX, MIN macros"
 
 [module.now]
 description = "current time in ISO8601 format"
-link = 'https://en.wikipedia.org/wiki/ISO_8601'
+wiki = 'https://en.wikipedia.org/wiki/ISO_8601'
 
 [module.logging]
 depends = [ "now" ]
@@ -15,18 +15,18 @@ depends = "logging"
 
 [module.xorshift]
 description = "implementation of xorshift64 and xorshift128+"
-link = 'https://en.wikipedia.org/wiki/Xorshift'
+wiki = 'https://en.wikipedia.org/wiki/Xorshift'
 depends = "fail"
 libs = "m"
 test-pkg = "gsl"
 
 [module.crc]
 description = "implementation of CRC16-ccitt"
-link = 'https://en.wikipedia.org/wiki/Computation_of_cyclic_redundancy_checks'
+wiki = 'https://en.wikipedia.org/wiki/Computation_of_cyclic_redundancy_checks'
 
 [module.base32]
 description = "implementation of the RFC4648 Base32 encoding"
-link = 'https://datatracker.ietf.org/doc/html/rfc4648'
+reference = 'https://datatracker.ietf.org/doc/html/rfc4648'
 depends = "util"
 test-depends = "xorshift"
 
@@ -44,7 +44,7 @@ depends = [ "fail", "logging" ]
 
 [module.landlock]
 description = "Linux landlock syscalls and helpers"
-link = 'https://www.kernel.org/doc/html/latest/userspace-api/landlock.html'
+reference = 'https://www.kernel.org/doc/html/latest/userspace-api/landlock.html'
 depends = "fail"
 
 [module.lua]
@@ -65,7 +65,7 @@ depends = "fail"
 
 [module.no_new_privs]
 description = "prctl(PR_SET_NO_NEW_PRIVS) helper"
-link = 'https://www.kernel.org/doc/html/latest/userspace-api/no_new_privs.html'
+reference = 'https://www.kernel.org/doc/html/latest/userspace-api/no_new_privs.html'
 man = 'prctl(2)'
 depends = "fail"
 
