@@ -8,6 +8,7 @@ description = "current time in ISO8601 format"
 wiki = 'https://en.wikipedia.org/wiki/ISO_8601'
 
 [module.logging]
+description = "compiletime eliminated printf-style logging"
 depends = [ "now" ]
 
 [module.fail]
@@ -32,16 +33,20 @@ reference = 'https://datatracker.ietf.org/doc/html/rfc4648'
 depends = "util"
 test-depends = "xorshift"
 
-[module.stopwatch]
+[module.mark]
+description = "realtime frequency calcuration"
 depends = [ "fail", "logging" ]
 
-[module.mark]
+[module.stopwatch]
+description = "pausable realtime frequency calcuration"
 depends = [ "fail", "logging" ]
 
 [module.test]
+description = "test utilities"
 depends = [ "fail", "now", "util" ]
 
 [module.file]
+description = "read file and split into lines"
 depends = [ "fail", "logging" ]
 
 [module.landlock]
@@ -56,9 +61,13 @@ reference = 'https://www.kernel.org/doc/html/latest/userspace-api/seccomp_filter
 man = 'seccomp(2)'
 
 [module.lua]
+description = "Lua error checking and stack helpers"
+reference = 'https://www.lua.org/manual/5.4/manual.html#4.4'
 depends = "fail"
 
 [module.uv]
+description = "uv error-checking"
+reference = 'http://docs.libuv.org/en/v1.x/errors.html#c.uv_err_name'
 depends = "fail"
 
 [module.rlimit]
