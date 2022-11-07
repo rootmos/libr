@@ -66,10 +66,10 @@ depends = "fail"
 [module.no_new_privs]
 description = "prctl(PR_SET_NO_NEW_PRIVS) helper"
 reference = 'https://www.kernel.org/doc/html/latest/userspace-api/no_new_privs.html'
-man = 'prctl(2)'
+man = 'prctl(2)#PR_SET_NO_NEW_PRIVS'
 depends = "fail"
 
 [module.nonblock]
 description = "helper to set/unset O_NONBLOCK flag"
-man = 'fcntl(2)'
+man = 'fcntl(2)#F_SETFL'
 depends = "fail"

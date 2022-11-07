@@ -5,7 +5,7 @@ import sys
 import re
 import toml
 
-MAN_REGEX = re.compile(r"(\w+)\((\d+)\)")
+MAN_REGEX = re.compile(r"(\w+)\((\d+)\)(#(\w+))?")
 
 if __name__ == "__main__":
     spec_fn = os.path.realpath(sys.argv[1])
@@ -36,6 +36,8 @@ if __name__ == "__main__":
         if "man" in m:
             ms = MAN_REGEX.match(m["man"])
             url = f"https://man.archlinux.org/man/{ms[1]}.{ms[2]}.en"
+            if ms[3]:
+                url += "#" + ms[4]
             out.write(f" [man]({url})")
 
         out.write("\n")

@@ -18,5 +18,5 @@
 - **uv**<br> [.h](modules/uv.h)
 - **rlimit**: apply strict rlimits<br> [.h](modules/rlimit.h) [.c](modules/rlimit.c) [man](https://man.archlinux.org/man/setrlimit.2.en)
 - **env**: getenv wrappers<br> [.h](modules/env.h) [.c](modules/env.c) [man](https://man.archlinux.org/man/getenv.3.en)
-- **no_new_privs**: prctl(PR_SET_NO_NEW_PRIVS) helper<br> [.h](modules/no_new_privs.h) [.c](modules/no_new_privs.c) [reference](https://www.kernel.org/doc/html/latest/userspace-api/no_new_privs.html) [man](https://man.archlinux.org/man/prctl.2.en)
-- **nonblock**: helper to set/unset O_NONBLOCK flag<br> [.h](modules/nonblock.h) [.c](modules/nonblock.c) [man](https://man.archlinux.org/man/fcntl.2.en)
+- **no_new_privs**: prctl(PR_SET_NO_NEW_PRIVS) helper<br> [.h](modules/no_new_privs.h) [.c](modules/no_new_privs.c) [reference](https://www.kernel.org/doc/html/latest/userspace-api/no_new_privs.html) [man](https://man.archlinux.org/man/prctl.2.en#PR_SET_NO_NEW_PRIVS)
+- **nonblock**: helper to set/unset O_NONBLOCK flag<br> [.h](modules/nonblock.h) [.c](modules/nonblock.c) [man](https://man.archlinux.org/man/fcntl.2.en#F_SETFL)
