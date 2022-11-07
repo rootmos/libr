@@ -45,9 +45,15 @@ depends = [ "fail", "now", "util" ]
 depends = [ "fail", "logging" ]
 
 [module.landlock]
-description = "Linux landlock syscalls and helpers"
+description = "Linux landlock syscall wrappers and helpers"
 reference = 'https://www.kernel.org/doc/html/latest/userspace-api/landlock.html'
+man = 'landlock(7)'
 depends = "fail"
+
+[module.seccomp]
+description = "seccomp syscall wrapper"
+reference = 'https://www.kernel.org/doc/html/latest/userspace-api/seccomp_filter.html'
+man = 'seccomp(2)'
 
 [module.lua]
 depends = "fail"
