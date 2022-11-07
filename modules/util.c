@@ -1,5 +1,5 @@
-#include "r/util.h"
-#include "r/fail.h"
+#include "util.h"
+#include "fail.h"
 
 #include <assert.h>
 #include <fcntl.h>
