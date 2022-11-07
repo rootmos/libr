@@ -161,6 +161,8 @@ def gnu_source(modules):
 def assemble_modules(modules, output):
     meta = modules[0].meta
 
+    logger.debug(f"assembling modules: {' '.join(m.name for m in modules)} into {output.name}")
+
     with tempfile.TemporaryFile() as f:
         when = datetime.datetime.now().astimezone().isoformat(timespec="seconds")
         version = f"{meta.version}"
@@ -201,35 +203,73 @@ def assemble_modules(modules, output):
         f.seek(0)
         output.write(f.read())
 
-c_suffix = re.compile(r"\.c$")
+def compilation_test(src, cc=None, cflags=None, ldflags=None):
+    cc = cc or "gcc"
+    cflags = cflags or []
+    ldflags = ldflags or []
+    src = or_list(src)
+
+    with tempfile.TemporaryDirectory() as tmp:
+        out = os.path.join(tmp, "a.out")
+        cmdline = [cc] + cflags + ["-o", out] + src + ldflags
+        logger.debug(f"compiling: {cmdline}")
+        subprocess.run(cmdline, check=True, cwd=tmp)
+
+        logger.debug(f"running: {out}")
+        subprocess.run([os.path.basename(out)], executable=out, check=True)
+
 def compilation_test_modules(modules, args):
     meta = modules[0].meta
-    logger.info(f"compilation testing modules: {' '.join([str(m) for m in modules])}")
+    logger.info(f"compilation testing modules: {' '.join(m.name for m in modules)}")
 
     with tempfile.TemporaryDirectory() as tmp:
         hdr = "r.h"
         with open(os.path.join(tmp, hdr), "wb") as f:
             assemble_modules(modules, f)
 
-        compilation_test_src = os.path.join(tmp, "compilation_test.c")
-        with open(compilation_test_src, "w") as f:
+        src = os.path.join(tmp, "main.c")
+        with open(src, "w") as f:
             if gnu_source(modules):
                 logger.debug("gnu source detected")
                 f.write(f'#define _GNU_SOURCE\n')
             f.write(f'#define {meta.implementation_guard}\n')
-            f.write(f'#include "{hdr}"\n\n')
+            f.write(f'#include "{hdr}"\n')
             f.write('int main(int argc, char* argv[]) { return 0; }\n')
 
-        exe = c_suffix.sub("", compilation_test_src)
-        cmdline = [args.cc] + shlex.split(args.cflags) + ["-o", exe, compilation_test_src]
+        ldflags = []
         for m in modules:
             for l in m.libs:
-                cmdline += [f"-l{l}"]
-        logger.debug(f"compiling: {cmdline}")
-        subprocess.run(cmdline, check=True, cwd=tmp)
+                ldflags += [f"-l{l}"]
 
-        logger.debug(f"running compiled binary: {exe}")
-        subprocess.run(exe, check=True, cwd=tmp)
+        compilation_test(src, ldflags=ldflags, cc=args.cc, cflags=args.cflags)
+
+def separate_compilation_test_modules(modules, args):
+    meta = modules[0].meta
+    logger.info(f"separate compilation testing modules: {' '.join(m.name for m in modules)}")
+
+    with tempfile.TemporaryDirectory() as tmp:
+        hdr = "r.h"
+        with open(os.path.join(tmp, hdr), "wb") as f:
+            assemble_modules(modules, f)
+
+        impl = os.path.join(tmp, "impl.c")
+        with open(impl, "w") as f:
+            if gnu_source(modules):
+                f.write(f'#define _GNU_SOURCE\n')
+            f.write(f'#define {meta.implementation_guard}\n')
+            f.write(f'#include "{hdr}"\n')
+
+        main = os.path.join(tmp, "main.c")
+        with open(main, "w") as f:
+            f.write(f'#include "{hdr}"\n')
+            f.write('int main(int argc, char* argv[]) { return 0; }\n')
+
+        ldflags = []
+        for m in modules:
+            for l in m.libs:
+                ldflags += [f"-l{l}"]
+
+        compilation_test(src=[impl, main], ldflags=ldflags, cc=args.cc, cflags=args.cflags)
 
 def test_module(module, modules, args):
     logger.info(f"testing module: {module}")
@@ -259,7 +299,7 @@ def test_module(module, modules, args):
                 f.write(g.read())
 
         exe = test_src.removesuffix(".c")
-        cflags = shlex.split(args.cflags)
+        cflags = args.cflags or []
         cflags += ["-Wa,--noexecstack"]
         ldflags = []
         for m in modules:
@@ -309,6 +349,8 @@ def parse_args():
 
     if args.modules is None:
         args.modules = os.path.join(args.root, "modules")
+
+    args.cflags = shlex.split(args.cflags)
 
     return args
 
@@ -376,6 +418,7 @@ if __name__ == "__main__":
 
     if args.compilation_test:
         compilation_test_modules(selection, args)
+        separate_compilation_test_modules(selection, args)
 
     if args.test:
         for m in selection:
