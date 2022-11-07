@@ -5,16 +5,12 @@ import datetime
 import logging
 import os
 import re
+import shlex
+import shutil
 import subprocess
 import sys
 import tempfile
-import shlex
-import shutil
-
-try:
-    import toml
-except ModuleNotFoundError:
-    import tomlkit as toml
+import toml
 
 def or_list(x):
     if x is None:
