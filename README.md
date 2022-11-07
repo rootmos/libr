@@ -5,11 +5,13 @@ Opinionated public domain C snippets and helpers,
 bundled as a [single-file library](https://github.com/nothings/stb).
 
 ## Usage
-Select a few modules, for instance `fail` and `logging`:
+Select a few modules: from the list below or run `bundle -l` to list the
+available modules.
+For instance: `fail` and `logging`:
 ```shell
 ~/git/libr/bundle --output=r.h fail logging
 ```
-Then for example `hello.c`:
+Then `hello.c` can check for errors and do logging:
 ```c
 #define LIBR_IMPLEMENTATION
 #include "r.h"
@@ -17,7 +19,7 @@ Then for example `hello.c`:
 int main(int argc, char* argv[])
 {
     if(argc != 2) {
-        failwith("incorrect number of arguments");
+        failwith("incorrect number of arguments: %d != 2", argc);
     }
 
     info("hello %s world!", argv[1]);
@@ -37,7 +39,7 @@ gcc -DLOG_LEVEL=LOG_INFO -o hello hello.c
 ```
 says hello:
 ```
-20221107T093336Z:3138442:main:hello.c:10 hello libr world!
+20221107T142200Z:3972731:main:hello.c:10 hello libr world!
 ```
 
 ## Modules

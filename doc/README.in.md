@@ -5,11 +5,13 @@ Opinionated public domain C snippets and helpers,
 bundled as a [single-file library](https://github.com/nothings/stb).
 
 ## Usage
-Select a few modules, for instance `fail` and `logging`:
+Select a few modules: from the list below or run `bundle -l` to list the
+available modules.
+For instance: `fail` and `logging`:
 ```shell
 @include ".usage.bundle.sh"
 ```
-Then for example `hello.c`:
+Then `hello.c` can check for errors and do logging:
 ```c
 @include "hello.c"
 ```

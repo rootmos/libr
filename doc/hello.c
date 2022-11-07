@@ -4,7 +4,7 @@
 int main(int argc, char* argv[])
 {
     if(argc != 2) {
-        failwith("incorrect number of arguments");
+        failwith("incorrect number of arguments: %d != 2", argc);
     }
 
     info("hello %s world!", argv[1]);
