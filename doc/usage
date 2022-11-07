@@ -1,0 +1,24 @@
+#!/bin/bash
+
+set -o nounset -o pipefail -o errexit
+
+SCRIPT_DIR=$(readlink -f "$0" | xargs dirname)
+ROOT=${ROOT-$(readlink -f "$SCRIPT_DIR/..")}
+
+TMP=$(mktemp -d)
+trap 'rm -rf $TMP' EXIT
+
+cp "$SCRIPT_DIR/hello.c" "$TMP"
+
+cd "$TMP"
+
+cat <<EOF > "$SCRIPT_DIR/.usage.bundle.sh"
+$(sed 's,'"$HOME"',~,' <<< "$ROOT/bundle") --output=r.h fail logging
+EOF
+cat <<EOF > "$SCRIPT_DIR/.usage.build.sh"
+gcc -DLOG_LEVEL=LOG_INFO -o hello hello.c
+./hello libr
+EOF
+
+. "$SCRIPT_DIR/.usage.bundle.sh"
+. "$SCRIPT_DIR/.usage.build.sh" &> "$SCRIPT_DIR/.usage.output.txt"

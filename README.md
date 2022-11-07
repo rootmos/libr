@@ -1,6 +1,45 @@
 # libr
 [![Build and test](https://github.com/rootmos/libr/actions/workflows/test.yaml/badge.svg)](https://github.com/rootmos/libr/actions/workflows/test.yaml)
 
+Opinionated public domain C snippets and helpers,
+bundled as a [single-file library](https://github.com/nothings/stb).
+
+## Usage
+Select a few modules, for instance `fail` and `logging`:
+```shell
+~/git/libr/bundle --output=r.h fail logging
+```
+Then for example `hello.c`:
+```c
+#define LIBR_IMPLEMENTATION
+#include "r.h"
+
+int main(int argc, char* argv[])
+{
+    if(argc != 2) {
+        failwith("incorrect number of arguments");
+    }
+
+    info("hello %s world!", argv[1]);
+
+    int r = close(0);
+    CHECK(r, "close(%d)", 0);
+
+    void* buf = malloc(4096); CHECK_MALLOC(buf);
+
+    return 0;
+}
+```
+which when built and run:
+```shell
+gcc -DLOG_LEVEL=LOG_INFO -o hello hello.c
+./hello libr
+```
+says hello:
+```
+20221107T093336Z:3138442:main:hello.c:10 hello libr world!
+```
+
 ## Modules
 - **util**: LENGTH, LIT, MAX, MIN macros<br> [.h](modules/util.h)
 - **now**: current time in ISO8601 format<br> [.h](modules/now.h) [.c](modules/now.c) [wiki](https://en.wikipedia.org/wiki/ISO_8601)
