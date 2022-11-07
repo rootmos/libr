@@ -1,4 +1,5 @@
 #include "base32.h"
+#include "util.h"
 
 #include <string.h>
 #include <endian.h>

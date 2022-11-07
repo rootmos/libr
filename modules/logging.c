@@ -1,9 +1,9 @@
 #include "logging.h"
-#include "util.h"
-#include "fail.h"
+#include "now.h"
 
 #include <stdio.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 #ifdef __cplusplus
 void r_dummy(...)
@@ -11,7 +11,7 @@ void r_dummy(...)
 void r_dummy()
 #endif
 {
-    failwith("called the dummy function, you dummy!");
+    abort();
 }
 
 void r_vlog(int level,
@@ -21,7 +21,7 @@ void r_vlog(int level,
             const char* const fmt, va_list vl)
 {
     fprintf(stderr, "%s:%d:%s:%s:%u ",
-            now_iso8601(), getpid(), caller, file, line);
+            now_iso8601_compact(), getpid(), caller, file, line);
 
     vfprintf(stderr, fmt, vl);
 }

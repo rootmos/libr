@@ -1,10 +1,14 @@
-version = "0.1.0"
+version = "0.2.0"
 
 [module.util]
-depends = "fail"
+description = "LENGTH, LIT, MAX, MIN macros"
+
+[module.now]
+description = "Current time in ISO8601 format"
+link = 'https://en.wikipedia.org/wiki/ISO_8601'
 
 [module.logging]
-depends = [ "fail", "util" ]
+depends = [ "now" ]
 
 [module.fail]
 depends = "logging"
@@ -33,7 +37,7 @@ depends = [ "fail", "logging" ]
 depends = [ "fail", "logging" ]
 
 [module.test]
-depends = [ "util", "fail" ]
+depends = [ "fail", "now", "util" ]
 
 [module.file]
 depends = [ "fail", "logging" ]
@@ -53,3 +57,19 @@ depends = "fail"
 description = "Apply strict rlimit's"
 man = 'setrlimit(2)'
 depends = [ "fail", "logging", "util" ]
+
+[module.env]
+description = "getenv wrappers"
+man = 'getenv(3)'
+depends = "fail"
+
+[module.no_new_privs]
+description = "prctl(PR_SET_NO_NEW_PRIVS) helper"
+link = 'https://www.kernel.org/doc/html/latest/userspace-api/no_new_privs.html'
+man = 'prctl(2)'
+depends = "fail"
+
+[module.nonblock]
+description = "helper to set/unset O_NONBLOCK flag"
+man = 'fcntl(2)'
+depends = "fail"
