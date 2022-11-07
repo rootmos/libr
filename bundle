@@ -20,8 +20,9 @@ def or_list(x):
     return x
 
 class Module:
-    def __init__(self, name, hdr, src, test, libs, test_libs, pkg, test_pkg, meta):
+    def __init__(self, name, description, hdr, src, test, libs, test_libs, pkg, test_pkg, meta):
         self.name = name
+        self.description = description
         self.hdr = hdr
         self.src = src
         self.test = test
@@ -112,6 +113,7 @@ def load_modules(spec, args):
 
         modules[n] = Module(
             name=n,
+            description=m.get("description"),
             hdr=hdr, src=src, test=test,
             libs=m.get("libs", []), test_libs=m.get("test-libs", []),
             pkg=m.get("pkg"), test_pkg=m.get("test-pkg"),
@@ -296,6 +298,7 @@ def parse_args():
     compilation.add_argument("--cflags", default="-Wall -Werror")
 
     parser.add_argument("-l", "--list", action="store_true")
+    parser.add_argument("-L", "--list-names-only", action="store_true")
     parser.add_argument("-t", "--test", metavar="BOOL", type=bool, default=True)
     parser.add_argument("-T", "--compilation-test", metavar="BOOL", type=bool, default=True)
 
@@ -336,20 +339,40 @@ if __name__ == "__main__":
         logger.debug(f"spec: {spec}")
         modules = load_modules(spec, args)
 
-    if args.list:
+    if args.list_names_only:
         if args.selection:
-            for m in select_modules(modules, args.selection):
-                print(m.name)
+            ms = select_modules(modules, args.selection)
         else:
-            for m in modules.values():
-                print(m.name)
+            ms = modules.values()
+
+        for m in ms:
+            print(m.name)
+
         sys.exit(0)
 
-    selection = select_modules(modules, args.selection)
+    if args.list or len(args.selection) == 0:
+        if args.list:
+            f = sys.stdout
+            ec = 0
+        else:
+            f = sys.stderr
+            f.write("refusing to bundle empty selection, choose some modules:\n")
+            ec = 1
 
-    if len(selection) == 0:
-        logger.error("refusing to bundle empty selection")
-        sys.exit(1)
+        if args.selection:
+            ms = select_modules(modules, args.selection)
+        else:
+            ms = modules.values()
+
+        for m in ms:
+            if m.description:
+                f.write(f"{m.name}:  {m.description}\n")
+            else:
+                f.write(f"{m.name}\n")
+
+        sys.exit(ec)
+
+    selection = select_modules(modules, args.selection)
 
     if args.compilation_test:
         compilation_test_modules(selection, args)

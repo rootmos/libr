@@ -4,7 +4,7 @@ version = "0.2.0"
 description = "LENGTH, LIT, MAX, MIN macros"
 
 [module.now]
-description = "Current time in ISO8601 format"
+description = "current time in ISO8601 format"
 link = 'https://en.wikipedia.org/wiki/ISO_8601'
 
 [module.logging]
@@ -14,18 +14,18 @@ depends = [ "now" ]
 depends = "logging"
 
 [module.xorshift]
-description = "Implementation of xorshift64 and xorshift128+"
+description = "implementation of xorshift64 and xorshift128+"
 link = 'https://en.wikipedia.org/wiki/Xorshift'
 depends = "fail"
 libs = "m"
 test-pkg = "gsl"
 
 [module.crc]
-description = "Implementation of CRC16-ccitt"
+description = "implementation of CRC16-ccitt"
 link = 'https://en.wikipedia.org/wiki/Computation_of_cyclic_redundancy_checks'
 
 [module.base32]
-description = "Implementation of the RFC4648 Base32 encoding"
+description = "implementation of the RFC4648 Base32 encoding"
 link = 'https://datatracker.ietf.org/doc/html/rfc4648'
 depends = "util"
 test-depends = "xorshift"
@@ -54,7 +54,7 @@ depends = "fail"
 depends = "fail"
 
 [module.rlimit]
-description = "Apply strict rlimit's"
+description = "apply strict rlimits"
 man = 'setrlimit(2)'
 depends = [ "fail", "logging", "util" ]
 
