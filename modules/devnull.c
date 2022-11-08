@@ -5,7 +5,6 @@
 
 int devnull(int flags)
 {
-    flags |= O_CLOEXEC;
     int fd = open("/dev/null", flags);
     CHECK(fd, "open(/dev/null, %d)", flags);
     return fd;
