@@ -14,6 +14,7 @@
 } while(0)
 
 #define CHECK_MALLOC(x) CHECK_NOT(x, NULL, "memory allocation failed")
+#define CHECK_MMAP(x) CHECK_NOT(x, MAP_FAILED, "memory mapping failed")
 
 #define failwith(format, ...) \
     r_failwith(__extension__ __FUNCTION__, __extension__ __FILE__, \

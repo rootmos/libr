@@ -46,7 +46,7 @@ description = "test utilities"
 depends = [ "fail", "now", "util" ]
 
 [module.file]
-description = "read file and split into lines"
+description = "read file line-by-line or as a whole"
 depends = [ "fail", "logging" ]
 
 [module.landlock]
