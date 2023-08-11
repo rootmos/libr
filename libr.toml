@@ -63,7 +63,8 @@ man = 'seccomp(2)'
 [module.lua]
 description = "Lua error checking and stack helpers"
 reference = 'https://www.lua.org/manual/5.4/manual.html#4.4'
-depends = "fail"
+depends = [ "fail", "util" ]
+libs = "lua"
 
 [module.uv]
 description = "uv error-checking"

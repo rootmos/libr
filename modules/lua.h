@@ -1,5 +1,7 @@
 #pragma once
 
+#include <lua.h>
+
 #define CHECK_LUA(L, err, format, ...) do { \
     if(err != LUA_OK) { \
         r_failwith(__extension__ __FUNCTION__, __extension__ __FILE__, \
@@ -26,3 +28,17 @@
 #define lua_stack_neutral_end(L) \
     CHECK_IF(LUA_STACK_NEUTRAL_TERM != lua_gettop(L), \
              "redundant stack elements present")
+
+#define luaR_failwith(L, format, ...) \
+    r_lua_failwith(L, \
+            __extension__ __FUNCTION__, \
+            __extension__ __FILE__, \
+            __extension__ __LINE__, \
+            format, ##__VA_ARGS__)
+
+void r_lua_failwith(lua_State* L,
+                    const char* const caller,
+                    const char* const file,
+                    const unsigned int line,
+                    const char* const fmt, ...)
+    __attribute__ ((noreturn, format (printf, 5, 6)));
