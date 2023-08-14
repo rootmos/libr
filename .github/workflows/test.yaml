@@ -4,6 +4,8 @@ on: [ push ]
 jobs:
   ubuntu:
     runs-on: ubuntu-22.04
+    env:
+      ARCH: ubuntu2204
     steps:
     - name: Install dependencies
       run: |

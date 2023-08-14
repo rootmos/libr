@@ -14,10 +14,23 @@ import toml
 
 def or_list(x):
     if x is None:
-        return None
+        return []
     elif not isinstance(x, list):
         return [ x ]
     return x
+
+class PkgConfig:
+    exe = "pkg-config"
+
+    @classmethod
+    def cflags(cls, *pkg):
+        p = subprocess.run([cls.exe, "--cflags"] + list(pkg), check=True, capture_output=True, text=True)
+        return shlex.split(p.stdout.splitlines()[0])
+
+    @classmethod
+    def libs(cls, *pkg):
+        p = subprocess.run([cls.exe, "--libs"] + list(pkg), check=True, capture_output=True, text=True)
+        return shlex.split(p.stdout.splitlines()[0])
 
 class Module:
     def __init__(self, name, description, hdr, src, test, libs, test_libs, pkg, test_pkg, meta):
@@ -41,6 +54,31 @@ class Module:
 
     def __repr__(self):
         return self.name
+
+    def cflags(self, arch, test=None):
+        cflags = []
+
+        for p in self.pkg or (self.test_pkg if test else []):
+            if isinstance(p, dict):
+                cflags += PkgConfig.cflags(p[arch])
+            else:
+                cflags += PkgConfig.cflags(p)
+
+        return cflags
+
+    def ldflags(self, arch, test=None):
+        ldflags = []
+
+        for l in self.libs + (self.test_libs if test else []):
+            ldflags.append(f"-l{l}")
+
+        for p in self.pkg or (self.test_pkg if test else []):
+            if isinstance(p, dict):
+                ldflags += PkgConfig.libs(p[arch])
+            else:
+                ldflags += PkgConfig.libs(p)
+
+        return ldflags
 
 class GitInfo:
     GIT = os.environ.get("GIT", "git")
@@ -236,12 +274,13 @@ def compilation_test_modules(modules, args):
             f.write(f'#include "{hdr}"\n')
             f.write('int main(int argc, char* argv[]) { return 0; }\n')
 
+        cflags = args.cflags
         ldflags = []
         for m in modules:
-            for l in m.libs:
-                ldflags += [f"-l{l}"]
+            cflags += m.cflags(arch=args.arch)
+            ldflags += m.ldflags(arch=args.arch)
 
-        compilation_test(src, ldflags=ldflags, cc=args.cc, cflags=args.cflags)
+        compilation_test(src, ldflags=ldflags, cc=args.cc, cflags=cflags)
 
 def separate_compilation_test_modules(modules, args):
     meta = modules[0].meta
@@ -264,12 +303,13 @@ def separate_compilation_test_modules(modules, args):
             f.write(f'#include "{hdr}"\n')
             f.write('int main(int argc, char* argv[]) { return 0; }\n')
 
+        cflags = args.cflags
         ldflags = []
         for m in modules:
-            for l in m.libs:
-                ldflags += [f"-l{l}"]
+            cflags += m.cflags(arch=args.arch)
+            ldflags += m.ldflags(arch=args.arch)
 
-        compilation_test(src=[impl, main], ldflags=ldflags, cc=args.cc, cflags=args.cflags)
+        compilation_test(src=[impl, main], ldflags=ldflags, cc=args.cc, cflags=cflags)
 
 def test_module(module, modules, args):
     logger.info(f"testing module: {module}")
@@ -303,16 +343,11 @@ def test_module(module, modules, args):
         cflags += ["-Wa,--noexecstack"]
         ldflags = []
         for m in modules:
-            pkg = (m.pkg or []) + (m.test_pkg or [])
-            if not pkg: continue
-            p = subprocess.run([args.pkg_config, "--cflags"] + pkg, check=True, capture_output=True, text=True)
-            cflags += shlex.split(p.stdout.splitlines()[0])
-            p = subprocess.run([args.pkg_config, "--libs"] + pkg, check=True, capture_output=True, text=True)
-            ldflags += shlex.split(p.stdout.splitlines()[0])
+            cflags += m.cflags(arch=args.arch, test=True)
+            ldflags += m.ldflags(arch=args.arch, test=True)
+
         cmdline = [args.cc] + cflags + ["-o", exe, test_src] + ldflags
-        for m in modules:
-            for l in m.libs + m.test_libs:
-                cmdline += [f"-l{l}"]
+
         logger.debug(f"compiling: {cmdline}")
         subprocess.run(cmdline, check=True, cwd=tmp)
 
@@ -333,6 +368,7 @@ def parse_args():
     paths.add_argument("--modules", default=os.environ.get("MODULES"))
 
     compilation = parser.add_argument_group('compilation')
+    compilation.add_argument("-A", "--arch", default=os.getenv("ARCH", "archlinux"))
     compilation.add_argument("-c", "--cc", default=os.getenv("CC", "gcc"))
     compilation.add_argument("--pkg-config", default=os.getenv("PKG_CONFIG", "pkg-config"))
     compilation.add_argument("--cflags", default="-Wall -Werror")
@@ -375,6 +411,8 @@ if __name__ == "__main__":
     args = parse_args()
     logger = setup_logger(args.log.upper())
     logger.debug(f"args: {args}")
+
+    PkgConfig.exe = args.pkg_config
 
     with open(os.path.join(args.root, "libr.toml"), "r") as f:
         spec = toml.load(f)
