@@ -20,14 +20,24 @@
     } \
 } while(0)
 
-#ifndef LUA_STACK_NEUTRAL_TERM
-#define LUA_STACK_NEUTRAL_TERM __lua_stack_top
+#ifndef LUA_STACK_MARKER
+#define LUA_STACK_MARKER __luaR_stack_marker
 #endif
 
-#define lua_stack_neutral_begin(L) int LUA_STACK_NEUTRAL_TERM = lua_gettop(L)
-#define lua_stack_neutral_end(L) \
-    CHECK_IF(LUA_STACK_NEUTRAL_TERM != lua_gettop(L), \
-             "redundant stack elements present")
+#define luaR_stack(L) int LUA_STACK_MARKER = lua_gettop(L)
+#define luaR_stack_expect(L, n) do { \
+    int r = lua_gettop(L) - LUA_STACK_MARKER; \
+    if(r < n) { \
+        failwith("too few stack elements: found %d expected %d", r ,n); \
+    } else if(r > n) { \
+        failwith("too many stack elements: found %d expected %d", r ,n); \
+    } \
+} while(0)
+
+#define luaR_return(L, n) do { \
+    luaR_stack_expect(L, n); \
+    return n; \
+} while(0)
 
 #define luaR_failwith(L, format, ...) \
     r_lua_failwith(L, \

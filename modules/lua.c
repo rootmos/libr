@@ -16,7 +16,7 @@ void r_lua_failwith(lua_State* L,
         const char* const fmt, ...)
 {
 
-    size_t N = 1;
+    size_t N = 256;
     char* buf;
     while(1) {
         buf = alloca(N);
