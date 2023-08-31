@@ -8,12 +8,13 @@
 #include <unistd.h>
 
 #include <lua.h>
+#include <lauxlib.h>
 
 void r_lua_failwith(lua_State* L,
-        const char* const caller,
-        const char* const file,
-        const unsigned int line,
-        const char* const fmt, ...)
+    const char* const caller,
+    const char* const file,
+    const unsigned int line,
+    const char* const fmt, ...)
 {
 
     size_t N = 256;
@@ -41,4 +42,20 @@ void r_lua_failwith(lua_State* L,
         va_end(vl);
         N <<= 1;
     }
+}
+
+int luaR_testmetatable(lua_State* L, int arg, const char* tname)
+{
+    if(lua_getmetatable(L, arg)) {
+        luaL_getmetatable(L, tname);
+        int r = lua_rawequal(L, -1, -2);
+        lua_pop(L, 2);
+        return r;
+    }
+    return 0;
+}
+
+void luaR_checkmetatable(lua_State* L, int arg, const char* tname)
+{
+    luaL_argexpected(L, luaR_testmetatable(L, arg, tname), arg, tname);
 }

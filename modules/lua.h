@@ -52,3 +52,6 @@ void r_lua_failwith(lua_State* L,
                     const unsigned int line,
                     const char* const fmt, ...)
     __attribute__ ((noreturn, format (printf, 5, 6)));
+
+int luaR_testmetatable(lua_State* L, int arg, const char* tname);
+void luaR_checkmetatable(lua_State* L, int arg, const char* tname);
