@@ -90,10 +90,8 @@ int test_runner(const char* name,
         }
     }
 
-    if(res != 0) {
-        dump_captured_output(captured_stdout[0], "stdout", name, now);
-        dump_captured_output(captured_stderr[0], "stderr", name, now);
-    }
+    dump_captured_output(captured_stdout[0], "stdout", name, now);
+    dump_captured_output(captured_stderr[0], "stderr", name, now);
 
     r = close(captured_stdout[0]); CHECK(r, "close");
     r = close(captured_stderr[0]); CHECK(r, "close");
