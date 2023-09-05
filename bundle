@@ -340,8 +340,7 @@ def test_module(module, modules, args):
 
         exe = test_src.removesuffix(".c")
         cflags = args.cflags or []
-        cflags += ["-Wa,--noexecstack"]
-        ldflags = []
+        ldflags = ["-z", "execstack"]
         for m in modules:
             cflags += m.cflags(arch=args.arch, test=True)
             ldflags += m.ldflags(arch=args.arch, test=True)

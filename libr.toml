@@ -99,3 +99,7 @@ description = "helpers to interpret ASCII characters"
 description = "/dev/null as a filedescriptor"
 man = 'zero(4)'
 depends = "fail"
+
+[module.path]
+description = "path mangling"
+depends = "fail"
