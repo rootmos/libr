@@ -1,7 +1,6 @@
 #include <assert.h>
 
-int main(int argc, char* argv[])
-{
+TEST_SUITE(crc, {
     TEST(crc16_ccitt_empty, {
          assert(crc16_ccitt(NULL, 0) == 0);
     });
@@ -15,5 +14,4 @@ int main(int argc, char* argv[])
          assert(crc16_ccitt("123456789", 9) == 0x31c3);
     });
 
-    return 0;
-}
+})

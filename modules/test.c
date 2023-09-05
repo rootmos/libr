@@ -29,25 +29,57 @@ static void dump_captured_output(int from_fd, const char* suffix,
     r = close(out); CHECK(r, "close");
 }
 
-int test_runner(const char* name,
+void test_runner_parse_options(struct test_runner_opts* o, int argc, char* argv[])
+{
+    memset(o, 0, sizeof(*o));
+
+    int res;
+    while((res = getopt(argc, argv, "oe")) != -1) {
+        switch(res) {
+        case 'o':
+            o->propagate_stdout = 1;
+            break;
+        case 'e':
+            o->propagate_stderr = 1;
+            break;
+        default:
+            exit(1);
+        }
+    }
+}
+
+int test_runner(struct test_runner_opts* opts,
+                const char* name,
                 void (*body)(void),
                 int expect_signal,
                 int expect_exit_code)
 {
-    const char* now = now_iso8601_compact();
+    char fullname[1024];
+    int r = snprintf(LIT(fullname), "%s.%s", opts->test_suite, name);
+    if(r >= sizeof(fullname)) {
+        failwith("buffer overflow");
+    }
 
-    int r;
+    const char* now = now_iso8601_compact();
 
     int captured_stdout[2]; r = pipe(captured_stdout); CHECK(r, "pipe");
     int captured_stderr[2]; r = pipe(captured_stderr); CHECK(r, "pipe");
 
     pid_t pid = fork(); CHECK(pid, "fork()");
     if(pid == 0) {
-        r = close(captured_stdout[0]); CHECK(r, "close");
-        r = dup2(captured_stdout[1], 1); CHECK(r, "dup2");
+        if(opts->propagate_stdout) {
+            r = dup2(1, captured_stdout[1]); CHECK(r, "dup2");
+        } else {
+            r = close(captured_stdout[0]); CHECK(r, "close");
+            r = dup2(captured_stdout[1], 1); CHECK(r, "dup2");
+        }
 
-        r = close(captured_stderr[0]); CHECK(r, "close");
-        r = dup2(captured_stderr[1], 2); CHECK(r, "dup2");
+        if(opts->propagate_stderr) {
+            r = dup2(2, captured_stderr[1]); CHECK(r, "dup2");
+        } else {
+            r = close(captured_stderr[0]); CHECK(r, "close");
+            r = dup2(captured_stderr[1], 2); CHECK(r, "dup2");
+        }
 
         body();
         exit(0);
@@ -56,7 +88,7 @@ int test_runner(const char* name,
     r = close(captured_stdout[1]); CHECK(r, "close");
     r = close(captured_stderr[1]); CHECK(r, "close");
 
-    dprintf(2, "%s %s ", now, name);
+    dprintf(2, "%s %s ", now, fullname);
 
     int res = -1;
 
@@ -90,8 +122,8 @@ int test_runner(const char* name,
         }
     }
 
-    dump_captured_output(captured_stdout[0], "stdout", name, now);
-    dump_captured_output(captured_stderr[0], "stderr", name, now);
+    dump_captured_output(captured_stdout[0], "stdout", fullname, now);
+    dump_captured_output(captured_stderr[0], "stderr", fullname, now);
 
     r = close(captured_stdout[0]); CHECK(r, "close");
     r = close(captured_stderr[0]); CHECK(r, "close");
