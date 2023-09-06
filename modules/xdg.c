@@ -10,7 +10,7 @@ struct xdg {
     char app[NAME_MAX];
 
     char* home;
-    char* data_home;
+    char* dirs[XDG_KINDS];
 };
 
 struct xdg* xdg_new(const char* app)
@@ -38,7 +38,10 @@ void xdg_free(struct xdg* xdg)
     if(xdg == NULL) return;
 
     free(xdg->home);
-    free(xdg->data_home);
+
+    for(int i = 0; i < XDG_KINDS; i++) {
+        free(xdg->dirs[i]);
+    }
 
     free(xdg);
 }
@@ -68,34 +71,91 @@ static size_t check_path(const char* p)
     return r;
 }
 
-char* xdg_data_home(struct xdg* xdg, ...)
+const char* xdg_dir(struct xdg* xdg, enum xdg_kind k)
 {
-    if(!xdg->data_home) {
+    if(!xdg->dirs[k]) {
         char buf[PATH_MAX];
-
         size_t l;
-        char* e = getenv("XDG_DATA_HOME");
+
+        const char* v = NULL;
+        switch(k) {
+            case XDG_DATA: v = "XDG_DATA_HOME"; break;
+            case XDG_CONFIG: v = "XDG_CONFIG_HOME"; break;
+            case XDG_STATE: v = "XDG_STATE_HOME"; break;
+            case XDG_CACHE: v = "XDG_CACHE_HOME"; break;
+            default: failwith("not implemented: %d", k);
+        }
+
+        const char* e = getenv(v);
         if(check_path(e)) {
-            if(xdg->app[0]) {
-                l = path_join(LIT(buf), e, xdg->app, NULL);
-            } else {
-                l = path_join(LIT(buf), e, NULL);
-            }
+            l = path_join(LIT(buf), e, NULL);
         } else {
-            const char* home = xdg_home(xdg);
-            if(xdg->app[0]) {
-                l = path_join(LIT(buf), home, ".local", "share", xdg->app, NULL);
-            } else {
-                l = path_join(LIT(buf), home, ".local", "share", NULL);
+            switch(k) {
+                case XDG_DATA:
+                    l = path_join(LIT(buf), xdg_home(xdg), ".local", "share", NULL);
+                    break;
+                case XDG_CONFIG:
+                    l = path_join(LIT(buf), xdg_home(xdg), ".config", NULL);
+                    break;
+                case XDG_STATE:
+                    l = path_join(LIT(buf), xdg_home(xdg), ".local", "state", NULL);
+                    break;
+                case XDG_CACHE:
+                    l = path_join(LIT(buf), xdg_home(xdg), ".cache", NULL);
+                    break;
+                default:
+                    failwith("not implemented: %d", k);
             }
         }
         if(l >= sizeof(buf)) {
             failwith("buffer overflow");
         }
 
-        xdg->data_home = strdup(buf);
-        CHECK_MALLOC(xdg->data_home);
+        if(xdg->app[0]) {
+            l = path_join(LIT(buf), buf, xdg->app, NULL);
+        }
+        if(l >= sizeof(buf)) {
+            failwith("buffer overflow");
+        }
+
+        xdg->dirs[k] = strdup(buf);
+        CHECK_MALLOC(xdg->dirs[k]);
     }
 
-    return xdg->data_home;
+    return xdg->dirs[k];
+}
+
+const char* xdg_data(struct xdg* xdg)
+{
+    return xdg_dir(xdg, XDG_DATA);
+}
+
+const char* xdg_config(struct xdg* xdg)
+{
+    return xdg_dir(xdg, XDG_CONFIG);
+}
+
+const char* xdg_state(struct xdg* xdg)
+{
+    return xdg_dir(xdg, XDG_STATE);
+}
+
+const char* xdg_cache(struct xdg* xdg)
+{
+    return xdg_dir(xdg, XDG_CACHE);
+}
+
+const char* xdg_runtime(struct xdg* xdg)
+{
+    return xdg_dir(xdg, XDG_RUNTIME);
+}
+
+char** xdg_data_dirs(struct xdg* xdg)
+{
+    const char* e = getenv("XDG_DATA_DIRS");
+    if(e == NULL || *e == 0) {
+        e = "/usr/local/share:/usr/share";
+    }
+
+    return NULL;
 }

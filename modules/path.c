@@ -1,19 +1,16 @@
 #include "path.h"
 
 #include <errno.h>
-#include <stdarg.h>
 #include <string.h>
 #include <sys/stat.h>
 
-size_t path_join(char* buf, size_t L, const char* p0, ...)
+size_t vpath_join(char* buf, size_t L, const char* p0, va_list ps)
 {
     size_t n = strlen(p0);
     if(n < L) {
-        memcpy(buf, p0, n);
+        memmove(buf, p0, n);
     }
 
-    va_list ps;
-    va_start(ps, p0);
     for(;;) {
         const char* p = va_arg(ps, const char*);
         if(!p) break;
@@ -33,6 +30,16 @@ size_t path_join(char* buf, size_t L, const char* p0, ...)
     if(n < L) {
         buf[n] = 0;
     }
+
+    return n;
+}
+
+size_t path_join(char* buf, size_t L, const char* p0, ...)
+{
+    va_list ps;
+    va_start(ps, p0);
+
+    size_t n = vpath_join(buf, L, p0, ps);
 
     va_end(ps);
 

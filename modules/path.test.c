@@ -43,4 +43,13 @@ TEST_SUITE(path, {
         assert(r == 7);
         assert(strcmp(buf, "foo/") == 0);
     });
+
+    TEST(join_overlap, {
+        char buf[128] = {0};
+        size_t r = path_join(LIT(buf), "foo", "bar", NULL);
+        assert(r == 7);
+        r = path_join(LIT(buf), buf, "baz", NULL);
+        assert(r == 11);
+        assert(strcmp(buf, "foo/bar/baz") == 0);
+    });
 })
