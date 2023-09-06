@@ -65,7 +65,7 @@ int makedirs(const char* path, mode_t mode)
 
     struct stat st;
     int r = stat(buf, &st);
-    CHECK(r, "stat(%s)", buf);
+    if(r != 0) return -1;
 
     if(!(st.st_mode & S_IFDIR)) {
         errno = EEXIST;
