@@ -1,8 +1,9 @@
 #include "path.h"
 
+#include <errno.h>
+#include <stdarg.h>
 #include <string.h>
 #include <sys/stat.h>
-#include <errno.h>
 
 size_t path_join(char* buf, size_t L, const char* p0, ...)
 {
