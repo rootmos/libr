@@ -3,8 +3,9 @@
 #include <errno.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <limits.h>
 
-size_t vpath_join(char* buf, size_t L, const char* p0, va_list ps)
+size_t path_joinv(char* buf, size_t L, const char* p0, va_list ps)
 {
     size_t n = strlen(p0);
     if(n < L) {
@@ -39,12 +40,37 @@ size_t path_join(char* buf, size_t L, const char* p0, ...)
     va_list ps;
     va_start(ps, p0);
 
-    size_t n = vpath_join(buf, L, p0, ps);
+    size_t n = path_joinv(buf, L, p0, ps);
 
     va_end(ps);
 
     return n;
 }
+
+#ifdef failwith
+const char* path_joinvs(const char* p0, va_list ps)
+{
+    static char buf[PATH_MAX];
+    size_t l = path_joinv(buf, sizeof(buf), p0, ps);
+    if(l >= sizeof(buf)) {
+        failwith("buffer overflow");
+    }
+
+    return buf;
+}
+
+const char* path_joins(const char* p0, ...)
+{
+    va_list ps;
+    va_start(ps, p0);
+
+    const char* p = path_joinvs(p0, ps);
+
+    va_end(ps);
+
+    return p;
+}
+#endif
 
 int makedirs(const char* path, mode_t mode)
 {
