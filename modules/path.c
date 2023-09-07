@@ -37,14 +37,9 @@ size_t path_joinv(char* buf, size_t L, const char* p0, va_list ps)
 
 size_t path_join(char* buf, size_t L, const char* p0, ...)
 {
-    va_list ps;
-    va_start(ps, p0);
-
+    va_list ps; va_start(ps, p0);
     size_t n = path_joinv(buf, L, p0, ps);
-
-    va_end(ps);
-
-    return n;
+    return va_end(ps), n;
 }
 
 #ifdef failwith
@@ -61,14 +56,9 @@ const char* path_joinvs(const char* p0, va_list ps)
 
 const char* path_joins(const char* p0, ...)
 {
-    va_list ps;
-    va_start(ps, p0);
-
+    va_list ps; va_start(ps, p0);
     const char* p = path_joinvs(p0, ps);
-
-    va_end(ps);
-
-    return p;
+    return va_end(ps), p;
 }
 #endif
 
