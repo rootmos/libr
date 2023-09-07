@@ -1,12 +1,15 @@
 #include "xdg.h"
-#include "path.h"
 #include "fail.h"
+#include "path.h"
 
+#include <errno.h>
 #include <limits.h>
-#include <string.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
 #include <unistd.h>
+#include <libgen.h>
 
 struct xdg {
     char app[NAME_MAX];
@@ -284,4 +287,95 @@ const char** xdg_data_dirs(struct xdg* xdg)
 const char** xdg_config_dirs(struct xdg* xdg)
 {
     return xdg_dirs(xdg, XDG_CONFIG);
+}
+
+const char* xdg_resolvev(struct xdg* xdg, enum xdg_kind k, char* buf, size_t L, va_list ps)
+{
+    const char** dirs = xdg_dirs(xdg, k);
+    for(size_t i = 0; dirs[i]; i++) {
+        va_list qs;
+        va_copy(qs, ps);
+        size_t l = path_joinv(buf, L, dirs[i], qs);
+        if(l >= L) {
+            failwith("buffer overflow");
+        }
+        va_end(qs);
+
+        struct stat st;
+        int r = stat(buf, &st);
+        if(r == -1 && (errno == EACCES || errno == ENOENT || errno == ENOTDIR)) {
+            continue;
+        }
+        CHECK(r, "stat(%s)", buf);
+
+        return buf;
+    }
+
+    return NULL;
+}
+
+const char* xdg_resolve(struct xdg* xdg, enum xdg_kind k, char* buf, size_t L, ...)
+{
+    va_list ps; va_start(ps, L);
+    const char* p = xdg_resolvev(xdg, k, buf, L, ps);
+    return va_end(ps), p;
+}
+
+const char* xdg_resolvevs(struct xdg* xdg, enum xdg_kind k, va_list ps)
+{
+    static char buf[PATH_MAX];
+    return xdg_resolvev(xdg, k, LIT(buf), ps);
+}
+
+const char* xdg_resolves(struct xdg* xdg, enum xdg_kind k, ...)
+{
+    va_list ps; va_start(ps, k);
+    const char* p = xdg_resolvevs(xdg, k, ps);
+    return va_end(ps), p;
+}
+
+void xdg_makedirs(const char* path)
+{
+    int r = makedirs(path, 0700);
+    CHECK(r, "makedirs(%s, 0700)", path);
+}
+
+const char* xdg_preparev(struct xdg* xdg, enum xdg_kind k, char* buf, size_t L, va_list ps)
+{
+    size_t l = path_joinv(buf, L, xdg_dir(xdg, k), ps);
+    if(l >= L) {
+        failwith("buffer overflow");
+    }
+
+    struct stat st;
+    int r = stat(buf, &st);
+    if(r == -1 && errno == ENOENT) {
+        char d[l+1];
+        memcpy(d, buf, l+1);
+        xdg_makedirs(dirname(d));
+        return buf;
+    }
+    CHECK(r, "stat(%s)", buf);
+
+    return buf;
+}
+
+const char* xdg_prepare(struct xdg* xdg, enum xdg_kind k, char* buf, size_t L, ...)
+{
+    va_list ps; va_start(ps, L);
+    const char* p = xdg_preparev(xdg, k, buf, L, ps);
+    return va_end(ps), p;
+}
+
+const char* xdg_preparevs(struct xdg* xdg, enum xdg_kind k, va_list ps)
+{
+    static char buf[PATH_MAX];
+    return xdg_preparev(xdg, k, LIT(buf), ps);
+}
+
+const char* xdg_prepares(struct xdg* xdg, enum xdg_kind k, ...)
+{
+    va_list ps; va_start(ps, k);
+    const char* p = xdg_preparevs(xdg, k, ps);
+    return va_end(ps), p;
 }

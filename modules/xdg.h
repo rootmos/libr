@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stddef.h>
+#include <stdarg.h>
 
 // https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
 
@@ -31,3 +32,13 @@ const char* xdg_runtime(struct xdg* xdg);
 
 const char** xdg_data_dirs(struct xdg* xdg);
 const char** xdg_config_dirs(struct xdg* xdg);
+
+const char* xdg_resolve(struct xdg* xdg, enum xdg_kind k, char* buf, size_t L, ...);
+const char* xdg_resolvev(struct xdg* xdg, enum xdg_kind k, char* buf, size_t L, va_list ps);
+const char* xdg_resolves(struct xdg* xdg, enum xdg_kind k, ...);
+const char* xdg_resolvevs(struct xdg* xdg, enum xdg_kind k, va_list ps);
+
+const char* xdg_preparev(struct xdg* xdg, enum xdg_kind k, char* buf, size_t L, va_list ps);
+const char* xdg_prepare(struct xdg* xdg, enum xdg_kind k, char* buf, size_t L, ...);
+const char* xdg_preparevs(struct xdg* xdg, enum xdg_kind k, va_list ps);
+const char* xdg_prepares(struct xdg* xdg, enum xdg_kind k, ...);

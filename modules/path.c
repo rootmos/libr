@@ -78,7 +78,7 @@ int makedirs(const char* path, mode_t mode)
     char buf[L+1];
     memcpy(buf, path, L+1);
 
-    for(size_t l = (buf[0] == '/' ? 1 : 0); l < L; l++) {
+    for(size_t l = (buf[0] == '/' ? 1 : 0); l <= L; l++) {
         if(buf[l] == '/') {
             buf[l] = 0;
         }
