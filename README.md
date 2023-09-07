@@ -39,7 +39,7 @@ gcc -DLOG_LEVEL=LOG_INFO -o hello hello.c
 ```
 says hello:
 ```
-20221107T142200Z:3972731:main:hello.c:10 hello libr world!
+20230906T105013Z:1530871:main:hello.c:10 hello libr world!
 ```
 
 ## Modules
@@ -53,10 +53,10 @@ says hello:
 - **mark**: realtime frequency calcuration<br> [.h](modules/mark.h) [.c](modules/mark.c)
 - **stopwatch**: pausable realtime frequency calcuration<br> [.h](modules/stopwatch.h) [.c](modules/stopwatch.c)
 - **test**: test utilities<br> [.h](modules/test.h) [.c](modules/test.c)
-- **file**: read file and split into lines<br> [.h](modules/file.h) [.c](modules/file.c)
+- **file**: read file line-by-line or as a whole<br> [.h](modules/file.h) [.c](modules/file.c)
 - **landlock**: Linux landlock syscall wrappers and helpers<br> [.h](modules/landlock.h) [.c](modules/landlock.c) [reference](https://www.kernel.org/doc/html/latest/userspace-api/landlock.html) [man](https://man.archlinux.org/man/landlock.7.en)
 - **seccomp**: seccomp syscall wrapper<br> [.h](modules/seccomp.h) [.c](modules/seccomp.c) [reference](https://www.kernel.org/doc/html/latest/userspace-api/seccomp_filter.html) [man](https://man.archlinux.org/man/seccomp.2.en)
-- **lua**: Lua error checking and stack helpers<br> [.h](modules/lua.h) [reference](https://www.lua.org/manual/5.4/manual.html#4.4)
+- **lua**: Lua error checking and stack helpers<br> [.h](modules/lua.h) [.c](modules/lua.c) [reference](https://www.lua.org/manual/5.4/manual.html#4.4)
 - **uv**: uv error-checking<br> [.h](modules/uv.h) [reference](http://docs.libuv.org/en/v1.x/errors.html#c.uv_err_name)
 - **rlimit**: apply strict rlimits<br> [.h](modules/rlimit.h) [.c](modules/rlimit.c) [man](https://man.archlinux.org/man/setrlimit.2.en)
 - **env**: getenv wrappers<br> [.h](modules/env.h) [.c](modules/env.c) [man](https://man.archlinux.org/man/getenv.3.en)
@@ -64,3 +64,5 @@ says hello:
 - **nonblock**: helper to set/unset O_NONBLOCK flag<br> [.h](modules/nonblock.h) [.c](modules/nonblock.c) [man](https://man.archlinux.org/man/fcntl.2.en#F_SETFL)
 - **char**: helpers to interpret ASCII characters<br> [.h](modules/char.h)
 - **devnull**: /dev/null as a filedescriptor<br> [.h](modules/devnull.h) [.c](modules/devnull.c) [man](https://man.archlinux.org/man/zero.4.en)
+- **path**: path mangling<br> [.h](modules/path.h) [.c](modules/path.c) [.test.c](modules/path.test.c)
+- **xdg**: XDG base directories<br> [.h](modules/xdg.h) [.c](modules/xdg.c) [reference](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html)

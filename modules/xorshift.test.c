@@ -44,8 +44,7 @@ static void normally_distributed(float (*f)(void))
     assert(chi2 <= gsl_cdf_chisq_Pinv(0.95, B));
 }
 
-int main(int argc, char* argv[])
-{
+TEST_SUITE(xorshift, {
     xorshift_state_initialize();
 
     TEST(xorshift64_is_uniform, {
@@ -74,6 +73,4 @@ int main(int argc, char* argv[])
         float f() { return 2*normal_dist_i(); }
         normally_distributed(f);
     });
-
-    return 0;
-}
+})

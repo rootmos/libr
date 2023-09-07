@@ -9,8 +9,11 @@ import shlex
 import shutil
 import subprocess
 import sys
+import tarfile
 import tempfile
 import toml
+
+project = "libr"
 
 def or_list(x):
     if x is None:
@@ -311,7 +314,7 @@ def separate_compilation_test_modules(modules, args):
 
         compilation_test(src=[impl, main], ldflags=ldflags, cc=args.cc, cflags=cflags)
 
-def test_module(module, modules, args):
+def test_module(module, modules, args, workdir):
     logger.info(f"testing module: {module}")
     if module.test is None:
         logger.warn("no tests available")
@@ -321,38 +324,36 @@ def test_module(module, modules, args):
     modules = select_modules(modules, [module.name, "test"] + [td.name for td in module.test_depends])
     logger.debug(f"running with test dependencies: {modules}")
 
-    with tempfile.TemporaryDirectory() as tmp:
-        hdr = "r.h"
-        with open(os.path.join(tmp, hdr), "wb") as f:
-            assemble_modules(modules, f)
+    hdr = f"{module}.r.h"
+    with open(os.path.join(workdir, hdr), "wb") as f:
+        assemble_modules(modules, f)
 
-        test_src = os.path.join(tmp, "test.c")
-        with open(test_src, "w") as f:
-            if gnu_source(modules):
-                logger.debug("gnu source detected")
-                f.write(f'#define _GNU_SOURCE\n')
-            f.write(f'#define {meta.implementation_guard}\n')
-            f.write(f'#include "{hdr}"\n\n')
+    test_src = os.path.join(workdir, f"{module}.test.c")
+    with open(test_src, "w") as f:
+        if gnu_source(modules):
+            logger.debug("gnu source detected")
+            f.write(f'#define _GNU_SOURCE\n')
+        f.write(f'#define {meta.implementation_guard}\n')
+        f.write(f'#include "{hdr}"\n\n')
 
-            logger.debug(f"test driver: {module.test}")
-            with open(module.test, "r") as g:
-                f.write(g.read())
+        logger.debug(f"test driver: {module.test}")
+        with open(module.test, "r") as g:
+            f.write(g.read())
 
-        exe = test_src.removesuffix(".c")
-        cflags = args.cflags or []
-        cflags += ["-Wa,--noexecstack"]
-        ldflags = []
-        for m in modules:
-            cflags += m.cflags(arch=args.arch, test=True)
-            ldflags += m.ldflags(arch=args.arch, test=True)
+    exe = test_src.removesuffix(".c")
+    cflags = args.cflags or []
+    ldflags = ["-z", "execstack"]
+    for m in modules:
+        cflags += m.cflags(arch=args.arch, test=True)
+        ldflags += m.ldflags(arch=args.arch, test=True)
 
-        cmdline = [args.cc] + cflags + ["-o", exe, test_src] + ldflags
+    cmdline = [args.cc] + cflags + ["-o", exe, test_src] + ldflags
 
-        logger.debug(f"compiling: {cmdline}")
-        subprocess.run(cmdline, check=True, cwd=tmp)
+    logger.debug(f"compiling: {cmdline}")
+    subprocess.run(cmdline, check=True, cwd=workdir)
 
-        logger.debug(f"running compiled binary: {exe}")
-        subprocess.run(exe, check=True, cwd=tmp)
+    logger.debug(f"running compiled binary: {exe}")
+    subprocess.run(exe, check=True, cwd=workdir)
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -375,7 +376,11 @@ def parse_args():
 
     parser.add_argument("-l", "--list", action="store_true")
     parser.add_argument("-L", "--list-names-only", action="store_true")
+
     parser.add_argument("-t", "--test", metavar="BOOL", type=bool, default=True)
+    parser.add_argument("--test-result", metavar="TARBALL")
+    parser.add_argument("-r", "--keep-test-result", action="store_true")
+
     parser.add_argument("-T", "--compilation-test", metavar="BOOL", type=bool, default=True)
 
     parser.add_argument("-o", "--output", default=os.environ.get("OUTPUT"))
@@ -414,7 +419,7 @@ if __name__ == "__main__":
 
     PkgConfig.exe = args.pkg_config
 
-    with open(os.path.join(args.root, "libr.toml"), "r") as f:
+    with open(os.path.join(args.root, f"{project}.toml"), "r") as f:
         spec = toml.load(f)
         logger.debug(f"spec: {spec}")
         modules = load_modules(spec, args)
@@ -459,9 +464,20 @@ if __name__ == "__main__":
         separate_compilation_test_modules(selection, args)
 
     if args.test:
-        for m in selection:
-            if m.test:
-                test_module(m, modules, args)
+        with tempfile.TemporaryDirectory(prefix=f"{project}-tests-") as tmp:
+            when = datetime.datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
+            fn = f"{project}-tests-{when}"
+            workdir = os.path.join(tmp, fn)
+            os.mkdir(workdir)
+            for m in selection:
+                if m.test:
+                    test_module(m, modules, args, workdir=workdir)
+
+            if args.test_result or args.keep_test_result:
+                tr = args.test_result if args.test_result else f"{fn}.tar.gz"
+                logger.info(f"storing test results: {tr}")
+                with tarfile.open(tr, mode="x:") as tar:
+                    tar.add(workdir, arcname=fn)
 
     if args.output:
         output = open(args.output, "wb")

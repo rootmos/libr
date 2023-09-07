@@ -99,3 +99,11 @@ description = "helpers to interpret ASCII characters"
 description = "/dev/null as a filedescriptor"
 man = 'zero(4)'
 depends = "fail"
+
+[module.path]
+description = "path mangling"
+
+[module.xdg]
+description = "XDG base directories"
+reference = 'https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html'
+depends = [ "fail", "path", "util", "logging" ]
