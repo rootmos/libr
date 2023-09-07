@@ -71,6 +71,20 @@ static size_t check_path(const char* p)
     return r;
 }
 
+static size_t append_app(const struct xdg* xdg, char* buf, size_t L, const char* p)
+{
+    if(xdg->app[0]) {
+        size_t l = path_join(buf, L, p, xdg->app, NULL);
+        if(l >= L) {
+            failwith("buffer overflow");
+        }
+
+        return l;
+    } else {
+        return strlen(buf);
+    }
+}
+
 const char* xdg_dir(struct xdg* xdg, enum xdg_kind k)
 {
     if(!xdg->dirs[k]) {
@@ -111,12 +125,7 @@ const char* xdg_dir(struct xdg* xdg, enum xdg_kind k)
             failwith("buffer overflow");
         }
 
-        if(xdg->app[0]) {
-            l = path_join(LIT(buf), buf, xdg->app, NULL);
-        }
-        if(l >= sizeof(buf)) {
-            failwith("buffer overflow");
-        }
+        append_app(xdg, LIT(buf), buf);
 
         xdg->dirs[k] = strdup(buf);
         CHECK_MALLOC(xdg->dirs[k]);
@@ -157,5 +166,73 @@ char** xdg_data_dirs(struct xdg* xdg)
         e = "/usr/local/share:/usr/share";
     }
 
-    return NULL;
+    struct {
+        char* path;
+        size_t len;
+        void* next;
+    }* dirs;
+
+    {
+        dirs = alloca(sizeof(*dirs));
+        const char* h = xdg_data(xdg);
+        dirs->len = strlen(h);
+        dirs->path = alloca(dirs->len+1);
+        memcpy(dirs->path, h, dirs->len+1);
+        dirs->next = NULL;
+    }
+    typeof(*dirs)** tail = (void*)&dirs->next;
+
+    size_t N = 0, n = 1;
+    {
+        const size_t L = strlen(e);
+        char buf[L+1];
+        memcpy(buf, e, L+1);
+        size_t a = 0, b = 0;
+        do {
+            for(; buf[b] != ':' && buf[b] != 0; b++);
+            buf[b] = 0;
+            char* p = &buf[a];
+            if(check_path(p)) {
+                char q[PATH_MAX];
+                size_t l = append_app(xdg, LIT(q), p);
+                if(l >= sizeof(q)) {
+                    failwith("buffer overflow");
+                }
+
+                typeof(*dirs)* t = alloca(sizeof(*dirs));
+                t->len = l;
+                t->path = alloca(l+1);
+                memcpy(t->path, q, l+1);
+                t->next = NULL;
+
+                *tail = t;
+                tail = (void*)&t->next;
+                n += 1;
+            }
+            b += 1;
+            a = b;
+        } while(b < L);
+
+        for(typeof(*dirs)* p = dirs; p != NULL; p = p->next) {
+            N += sizeof(char*);
+            N += p->len+1;
+        }
+        N += sizeof(char*); // add space for the NULL guard
+    }
+
+    void* buf = malloc(N);
+    CHECK_MALLOC(buf);
+    char** index = buf;
+
+    index[n] = NULL;
+    char* strings = (char*)&index[n+1];
+
+    size_t i = 0;
+    for(typeof(*dirs)* p = dirs; p != NULL; i++, p = p->next) {
+        index[i] = strings;
+        memcpy(strings, p->path, p->len + 1);
+        strings += p->len + 1;
+    }
+
+    return buf;
 }
