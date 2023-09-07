@@ -106,4 +106,4 @@ description = "path mangling"
 [module.xdg]
 description = "XDG base directories"
 reference = 'https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html'
-depends = [ "fail", "path", "util" ]
+depends = [ "fail", "path", "util", "logging" ]

@@ -5,6 +5,8 @@
 #include <limits.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
 
 struct xdg {
     char app[NAME_MAX];
@@ -45,7 +47,7 @@ void xdg_free(struct xdg* xdg)
     free(xdg);
 }
 
-static size_t check_path(const char* p)
+static size_t xdg_check_path(const char* p)
 {
     if(!p) return 0;
     size_t r = strnlen(p, PATH_MAX);
@@ -55,7 +57,7 @@ static size_t check_path(const char* p)
     return r;
 }
 
-static size_t append_app(const struct xdg* xdg, char* buf, size_t L, const char* p)
+static size_t xdg_append_app(const struct xdg* xdg, char* buf, size_t L, const char* p)
 {
     if(xdg->app[0]) {
         size_t l = path_join(buf, L, p, xdg->app, NULL);
@@ -67,6 +69,21 @@ static size_t append_app(const struct xdg* xdg, char* buf, size_t L, const char*
     } else {
         return strlen(buf);
     }
+}
+
+static size_t xdg_fallback_runtime_dir(char* buf, size_t L)
+{
+    char template[NAME_MAX];
+    size_t n = snprintf(LIT(template), "/tmp/xdg-runtime-fallback-%d-XXXXXX", geteuid());
+    if(n >= sizeof(template)) {
+        failwith("buffer overflow");
+    }
+
+    // mkdtemp(3): "The directory is then created with permissions 0700."
+    char* tmp = mkdtemp(template);
+    CHECK_NOT(tmp, NULL, "mkdtemp(%s)", template);
+    warning("using fallback directory for an unset XDG_RUNTIME_DIR: %s", tmp);
+    return snprintf(buf, L, "%s", tmp);
 }
 
 const char* xdg_dir(struct xdg* xdg, enum xdg_kind k)
@@ -94,11 +111,11 @@ const char* xdg_dir(struct xdg* xdg, enum xdg_kind k)
         case XDG_STATE: v = "XDG_STATE_HOME"; break;
         case XDG_CACHE: v = "XDG_CACHE_HOME"; break;
         case XDG_RUNTIME: v = "XDG_RUNTIME_DIR"; break;
-        default: failwith("not implemented: %d", k);
+        default: failwith("unexpected kind: %d", k);
     }
 
     const char* e = getenv(v);
-    if(check_path(e)) {
+    if(xdg_check_path(e)) {
         l = path_join(LIT(buf), e, NULL);
     } else {
         switch(k) {
@@ -114,15 +131,18 @@ const char* xdg_dir(struct xdg* xdg, enum xdg_kind k)
             case XDG_CACHE:
                 l = path_join(LIT(buf), xdg_home(xdg), ".cache", NULL);
                 break;
+            case XDG_RUNTIME:
+                l = xdg_fallback_runtime_dir(LIT(buf));
+                break;
             default:
-                failwith("not implemented: %d", k);
+                failwith("unexpected kind: %d", k);
         }
     }
     if(l >= sizeof(buf)) {
         failwith("buffer overflow");
     }
 
-    append_app(xdg, LIT(buf), buf);
+    xdg_append_app(xdg, LIT(buf), buf);
 
     xdg->dir[k] = strdup(buf);
     CHECK_MALLOC(xdg->dir[k]);
@@ -199,7 +219,7 @@ const char** xdg_dirs(struct xdg* xdg, enum xdg_kind k)
     }
     typeof(*dirs)** tail = (void*)&dirs->next;
 
-    size_t N = 0, n = 1;
+    size_t n = 1;
     if(e) {
         const size_t L = strlen(e);
         char buf[L+1];
@@ -209,9 +229,9 @@ const char** xdg_dirs(struct xdg* xdg, enum xdg_kind k)
             for(; buf[b] != ':' && buf[b] != 0; b++);
             buf[b] = 0;
             char* p = &buf[a];
-            if(check_path(p)) {
+            if(xdg_check_path(p)) {
                 char q[PATH_MAX];
-                size_t l = append_app(xdg, LIT(q), p);
+                size_t l = xdg_append_app(xdg, LIT(q), p);
                 if(l >= sizeof(q)) {
                     failwith("buffer overflow");
                 }
@@ -231,6 +251,7 @@ const char** xdg_dirs(struct xdg* xdg, enum xdg_kind k)
         } while(b < L);
     }
 
+    size_t N = 0;
     for(typeof(*dirs)* p = dirs; p != NULL; p = p->next) {
         N += sizeof(char*);
         N += p->len+1;
