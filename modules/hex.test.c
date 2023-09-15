@@ -189,8 +189,11 @@ TEST_SUITE(hex, {
 
     TEST(decode_returns_length, {
         const char* s = "666F6F626172";
+        assert(hex_decode(NULL, s) == 6);
+
         char bin[hex_decode(NULL, s)];
         memset(bin, 0, sizeof(bin));
+        hex_decode(bin, s);
         assert(memcmp(bin, "foobar", sizeof(bin)) == 0);
     });
 })

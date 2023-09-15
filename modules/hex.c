@@ -32,7 +32,7 @@ static int_fast8_t from_hex_digit(char c)
 
 ssize_t hex_decode(void* bin, const char* enc)
 {
-    for(size_t i = 0, j = 0;;) {
+    for(size_t i = 0, j = 0;; j++) {
         if(enc[i] == 0) {
             return j;
         }
@@ -47,7 +47,7 @@ ssize_t hex_decode(void* bin, const char* enc)
         }
 
         if(bin != NULL) {
-            ((uint8_t*)bin)[j++] = u << 4 | l;
+            ((uint8_t*)bin)[j] = u << 4 | l;
         }
     }
 }

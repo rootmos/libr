@@ -8,10 +8,3 @@
 
 void hex_encode(char* enc, const void* bin, size_t l);
 ssize_t hex_decode(void* bin, const char* enc);
-
-#ifdef failwith
-char* hex_encode_s(const void* bin, size_t l);
-char* hex_encode_m(const void* bin, size_t l);
-void* hex_decode_s(void* bin, size_t* l);
-void* hex_decode_m(void* bin, size_t* l);
-#endif
