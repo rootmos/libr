@@ -352,8 +352,11 @@ def test_module(module, modules, args, workdir):
     logger.debug(f"compiling: {cmdline}")
     subprocess.run(cmdline, check=True, cwd=workdir)
 
-    logger.debug(f"running compiled binary: {exe}")
-    subprocess.run(exe, check=True, cwd=workdir)
+    cmdline = [exe]
+    if args.verbose:
+        cmdline += ["-oe"]
+    logger.debug(f"running compiled binary: {cmdline}")
+    subprocess.run(cmdline, check=True, cwd=workdir)
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -379,6 +382,7 @@ def parse_args():
 
     parser.add_argument("-t", "--test", metavar="BOOL", type=bool, default=True)
     parser.add_argument("--test-result", metavar="TARBALL")
+    parser.add_argument("-v", "--verbose", action="store_true")
     parser.add_argument("-r", "--keep-test-result", action="store_true")
 
     parser.add_argument("-T", "--compilation-test", metavar="BOOL", type=bool, default=True)
