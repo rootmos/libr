@@ -33,6 +33,9 @@ reference = 'https://datatracker.ietf.org/doc/html/rfc4648'
 depends = "util"
 test-depends = "xorshift"
 
+[module.hex]
+description = "hexadecimal binary encoding"
+
 [module.mark]
 description = "realtime frequency calcuration"
 depends = [ "fail", "logging" ]
