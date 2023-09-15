@@ -35,6 +35,7 @@ test-depends = "xorshift"
 
 [module.hex]
 description = "hexadecimal binary encoding"
+test-depends = "xorshift"
 
 [module.mark]
 description = "realtime frequency calcuration"

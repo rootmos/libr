@@ -196,4 +196,36 @@ TEST_SUITE(hex, {
         hex_decode(bin, s);
         assert(memcmp(bin, "foobar", sizeof(bin)) == 0);
     });
+
+    TEST(round_trip_arbitrary_byte_string_lower, {
+        hex_alphabeth = hex_alphabeth_lower_case;
+         for(size_t i = 0; i < 100; i++) {
+             uint16_t L; random_bytes(&L, sizeof(L));
+             char bin[L]; random_bytes(bin, sizeof(bin));
+
+             char enc[HEX_ENCODED_LENGTH(sizeof(bin))];
+             hex_encode(enc, bin, L);
+
+             char dec[L];
+             assert(hex_decode(dec, enc) == L);
+
+             assert(memcmp(bin, dec, L) == 0);
+         }
+    });
+
+    TEST(round_trip_arbitrary_byte_string_upper, {
+        hex_alphabeth = hex_alphabeth_lower_case;
+         for(size_t i = 0; i < 100; i++) {
+             uint16_t L; random_bytes(&L, sizeof(L));
+             char bin[L]; random_bytes(bin, sizeof(bin));
+
+             char enc[HEX_ENCODED_LENGTH(sizeof(bin))];
+             hex_encode(enc, bin, L);
+
+             char dec[L];
+             assert(hex_decode(dec, enc) == L);
+
+             assert(memcmp(bin, dec, L) == 0);
+         }
+    });
 })
