@@ -116,4 +116,5 @@ depends = [ "fail", "path", "util", "logging" ]
 description = "SHA implementations"
 wiki = 'https://en.wikipedia.org/wiki/Secure_Hash_Algorithms'
 reference = 'https://www.rfc-editor.org/rfc/rfc4634'
+depends = [ "util" ]
 test-depends = "hex"

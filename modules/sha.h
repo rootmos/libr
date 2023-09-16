@@ -7,6 +7,7 @@
 
 struct sha1_state {
     uint8_t digest[SHA1_DIGEST_LENGTH];
+    uint8_t _internal[84];
 };
 
 void sha1_init(struct sha1_state* st);

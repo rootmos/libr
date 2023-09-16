@@ -1,11 +1,20 @@
 TEST_SUITE(sha1, {
     TEST(empty, {
         struct sha1_state st;
+        memset(&st, 0, sizeof(st));
         sha1_init(&st);
         sha1_finalize(&st);
 
-        char expected[SHA1_DIGEST_LENGTH];
+        /*for(size_t i = 0; i < SHA1_DIGEST_LENGTH; i++) {*/
+            /*dprintf(2, "st.digest[%zu]=%x\n", i, st.digest[i]);*/
+        /*}*/
+
+        uint8_t expected[SHA1_DIGEST_LENGTH];
         assert(hex_decode(expected, "da39a3ee5e6b4b0d3255bfef95601890afd80709") == SHA1_DIGEST_LENGTH);
+
+        char actual[SHA1_DIGEST_LENGTH*2+1];
+        hex_encode(actual, LIT(st.digest));
+        dprintf(2, "actual=%s\n", actual);
 
         assert(memcmp(st.digest, expected, sizeof(expected)) == 0);
     });
