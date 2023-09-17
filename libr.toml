@@ -112,9 +112,12 @@ description = "XDG base directories"
 reference = 'https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html'
 depends = [ "fail", "path", "util", "logging" ]
 
+[module.hexdump]
+description = "hexdump troubleshooting utility"
+
 [module.sha]
 description = "SHA implementations"
 wiki = 'https://en.wikipedia.org/wiki/Secure_Hash_Algorithms'
 reference = 'https://www.rfc-editor.org/rfc/rfc4634'
-depends = [ "util" ]
-test-depends = "hex"
+depends = [ "util", "hexdump" ]
+test-depends = [ "hex" ]

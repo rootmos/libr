@@ -1,11 +1,13 @@
 #include "sha.h"
 #include "util.h"
 
+#include "hexdump.h"
+
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include <stdio.h>
+#include <endian.h>
 
 struct sha1_state_internal {
     uint32_t H[5];
@@ -75,7 +77,7 @@ static void sha1_process_block(struct sha1_state_internal* st, uint32_t block[16
 {
     uint32_t W[80];
     for(size_t i = 0; i < 16; i++) {
-        W[i] = block[i]; // TODO: endianess??
+        W[i] = be32toh(block[i]);
     }
 
     for(size_t t = 16; t < 80; t++) {
@@ -110,12 +112,13 @@ void sha1_update(struct sha1_state* st_, void* buf, size_t len)
     while(l > 0) {
         size_t L = MIN(l, sizeof(st->buf) - st->off);
 
-        memcpy(&st->buf[st->off], b, L); 
+        memcpy(&st->buf[st->off], b, L);
         b += L;
         l -= L;
         st->off += L;
 
         if(sizeof(st->buf) == st->off) {
+            hexdump(2, LIT(st->buf));
             sha1_process_block(st, (uint32_t*)st->buf);
             st->off = 0;
         }
@@ -130,17 +133,19 @@ void sha1_finalize(struct sha1_state* st_)
 
     // st->len < 2^64
     assert(st->len <= 0xffffffffffffffff);
-    dprintf(2, "%ld", st->len);
 
     size_t k = 0;
-    for(; ((st->len*8 + 1 + k) % 512) != 448; k++) {
-    }
+    for(; ((st->len*8 + 1 + k) % 512) != 448; k++);
     size_t l = (k+1)/8;
     uint8_t buf[l + 8];
     memset(buf, 0, sizeof(buf));
 
-    *((uint64_t*)(&buf[l])) = st->len;
+    *((uint64_t*)(&buf[l])) = htobe64(st->len);
     buf[0] |= 0x80;
 
     sha1_update(st_, LIT(buf));
+
+    for(size_t i = 0; i < 5; i++) {
+        st->H[i] = htobe32(st->H[i]);
+    }
 }

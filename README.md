@@ -67,3 +67,5 @@ says hello:
 - **devnull**: /dev/null as a filedescriptor<br> [.h](modules/devnull.h) [.c](modules/devnull.c) [man](https://man.archlinux.org/man/zero.4.en)
 - **path**: path mangling<br> [.h](modules/path.h) [.c](modules/path.c) [.test.c](modules/path.test.c)
 - **xdg**: XDG base directories<br> [.h](modules/xdg.h) [.c](modules/xdg.c) [reference](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html)
+- **hexdump**: hexdump troubleshooting utility<br> [.h](modules/hexdump.h) [.c](modules/hexdump.c)
+- **sha**: SHA implementations<br> [.h](modules/sha.h) [.c](modules/sha.c) [.test.c](modules/sha.test.c) [wiki](https://en.wikipedia.org/wiki/Secure_Hash_Algorithms) [reference](https://www.rfc-editor.org/rfc/rfc4634)
