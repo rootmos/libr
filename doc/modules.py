@@ -17,7 +17,7 @@ if __name__ == "__main__":
     with open(spec_fn, "r") as f:
         spec = toml.load(f)
 
-    for n, m in spec["module"].items():
+    for n, m in sorted(spec["module"].items()):
         out.write(f"- **{n}**")
         if "description" in m:
             out.write(f": {m['description']}")
