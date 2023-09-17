@@ -115,10 +115,10 @@ depends = [ "fail", "path", "util", "logging" ]
 [module.hexdump]
 description = "hexdump troubleshooting utility"
 
-[module.sha]
-description = "SHA implementations"
+[module.sha1]
+description = "SHA-1 implementation"
 wiki = 'https://en.wikipedia.org/wiki/Secure_Hash_Algorithms'
-reference = 'https://www.rfc-editor.org/rfc/rfc4634'
+reference = 'https://www.rfc-editor.org/rfc/rfc3174'
 depends = [ "util" ]
 test-depends = [ "hex" ]
 libs = "m"
