@@ -8,6 +8,10 @@
 #define LIT(x) x,sizeof(x)
 #endif
 
+#ifndef STR
+#define STR(x) x,strlen(x)
+#endif
+
 #ifndef MAX
 #define MAX(a,b) ((a) > (b) ? (a) : (b))
 #endif

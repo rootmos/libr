@@ -111,3 +111,14 @@ description = "path mangling"
 description = "XDG base directories"
 reference = 'https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html'
 depends = [ "fail", "path", "util", "logging" ]
+
+[module.hexdump]
+description = "hexdump troubleshooting utility"
+
+[module.sha1]
+description = "SHA-1 implementation"
+wiki = 'https://en.wikipedia.org/wiki/Secure_Hash_Algorithms'
+reference = 'https://www.rfc-editor.org/rfc/rfc3174'
+depends = [ "util" ]
+test-depends = [ "hex" ]
+libs = "m"
