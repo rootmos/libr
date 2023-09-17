@@ -1,8 +1,6 @@
 #include "sha.h"
 #include "util.h"
 
-#include "hexdump.h"
-
 #include <assert.h>
 #include <endian.h>
 #include <stdlib.h>

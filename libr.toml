@@ -119,5 +119,6 @@ description = "hexdump troubleshooting utility"
 description = "SHA implementations"
 wiki = 'https://en.wikipedia.org/wiki/Secure_Hash_Algorithms'
 reference = 'https://www.rfc-editor.org/rfc/rfc4634'
-depends = [ "util", "hexdump" ]
+depends = [ "util" ]
 test-depends = [ "hex" ]
+libs = "m"
