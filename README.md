@@ -69,3 +69,4 @@ says hello:
 - **xdg**: XDG base directories<br> [.h](modules/xdg.h) [.c](modules/xdg.c) [reference](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html)
 - **hexdump**: hexdump troubleshooting utility<br> [.h](modules/hexdump.h) [.c](modules/hexdump.c)
 - **sha1**: SHA-1 implementation<br> [.h](modules/sha1.h) [.c](modules/sha1.c) [.test.c](modules/sha1.test.c) [wiki](https://en.wikipedia.org/wiki/Secure_Hash_Algorithms) [reference](https://www.rfc-editor.org/rfc/rfc3174)
+- **sha2**: SHA-2 implementation<br> [.h](modules/sha2.h) [.c](modules/sha2.c) [.test.c](modules/sha2.test.c) [wiki](https://en.wikipedia.org/wiki/Secure_Hash_Algorithms) [reference](https://www.rfc-editor.org/rfc/rfc6234)

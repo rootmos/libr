@@ -122,3 +122,11 @@ reference = 'https://www.rfc-editor.org/rfc/rfc3174'
 depends = [ "util" ]
 test-depends = [ "hex" ]
 libs = "m"
+
+[module.sha2]
+description = "SHA-2 implementation"
+wiki = 'https://en.wikipedia.org/wiki/Secure_Hash_Algorithms'
+reference = 'https://www.rfc-editor.org/rfc/rfc6234'
+depends = [ "util" ]
+test-depends = [ "hex" ]
+libs = "m"

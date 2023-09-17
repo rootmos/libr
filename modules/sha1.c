@@ -1,4 +1,4 @@
-#include "sha.h"
+#include "sha1.h"
 #include "util.h"
 
 #include <assert.h>
