@@ -4,10 +4,9 @@
 #include "hexdump.h"
 
 #include <assert.h>
+#include <endian.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include <endian.h>
 
 struct sha1_state_internal {
     uint32_t H[5];
@@ -118,7 +117,6 @@ void sha1_update(struct sha1_state* st_, void* buf, size_t len)
         st->off += L;
 
         if(sizeof(st->buf) == st->off) {
-            hexdump(2, LIT(st->buf));
             sha1_process_block(st, (uint32_t*)st->buf);
             st->off = 0;
         }
@@ -131,8 +129,7 @@ void sha1_finalize(struct sha1_state* st_)
 {
     struct sha1_state_internal* st = sha1_to_internal_state(st_);
 
-    // st->len < 2^64
-    assert(st->len <= 0xffffffffffffffff);
+    assert(st->len*8 <= 0xffffffffffffffff);
 
     size_t k = 0;
     for(; ((st->len*8 + 1 + k) % 512) != 448; k++);
@@ -140,7 +137,7 @@ void sha1_finalize(struct sha1_state* st_)
     uint8_t buf[l + 8];
     memset(buf, 0, sizeof(buf));
 
-    *((uint64_t*)(&buf[l])) = htobe64(st->len);
+    *((uint64_t*)(&buf[l])) = htobe64(st->len*8);
     buf[0] |= 0x80;
 
     sha1_update(st_, LIT(buf));

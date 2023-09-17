@@ -1,10 +1,11 @@
 #include "hexdump.h"
 
+#include <stdint.h>
 #include <stdio.h>
 
 void hexdump(int fd, void* buf, size_t l)
 {
-    char* p = buf;
+    uint8_t* p = buf;
     for(int i = 0; i < l; i++) {
         if(i % 16 == 0) {
             if(i > 0) {

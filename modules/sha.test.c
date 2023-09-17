@@ -19,10 +19,6 @@ TEST_SUITE(sha1, {
         char expected[SHA1_DIGEST_LENGTH];
         assert(hex_decode(expected, "0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33") == SHA1_DIGEST_LENGTH);
 
-        char actual[SHA1_DIGEST_LENGTH*2+1];
-        hex_encode(actual, LIT(st.digest));
-        dprintf(2, "actual=%s\n", actual);
-
         assert(memcmp(st.digest, expected, sizeof(expected)) == 0);
     });
 
