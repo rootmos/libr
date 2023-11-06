@@ -11,5 +11,5 @@ struct sha1_state {
 };
 
 void sha1_init(struct sha1_state* st);
-void sha1_update(struct sha1_state* st, void* buf, size_t len);
+void sha1_update(struct sha1_state* st, const void* buf, size_t len);
 void sha1_finalize(struct sha1_state* st);

@@ -99,11 +99,11 @@ static void sha1_process_block(struct sha1_state_internal* st, uint32_t block[16
     st->H[4] += E;
 }
 
-void sha1_update(struct sha1_state* st_, void* buf, size_t len)
+void sha1_update(struct sha1_state* st_, const void* buf, size_t len)
 {
     struct sha1_state_internal* st = sha1_to_internal_state(st_);
 
-    uint8_t* b = buf;
+    const uint8_t* b = buf;
     size_t l = len;
 
     while(l > 0) {
