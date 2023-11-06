@@ -335,6 +335,7 @@ def test_module(module, modules, args, workdir):
             f.write(f'#define _GNU_SOURCE\n')
         f.write(f'#define {meta.implementation_guard}\n')
         f.write(f'#include "{hdr}"\n\n')
+        f.write(f'#include <assert.h>\n\n')
 
         logger.debug(f"test driver: {module.test}")
         with open(module.test, "r") as g:

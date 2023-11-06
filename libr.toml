@@ -99,6 +99,9 @@ depends = "fail"
 [module.char]
 description = "helpers to interpret ASCII characters"
 
+[module.str]
+description = "string helpers"
+
 [module.devnull]
 description = "/dev/null as a filedescriptor"
 man = 'zero(4)'

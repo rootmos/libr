@@ -1,5 +1,3 @@
-#include <assert.h>
-
 TEST_SUITE(base32, {
     TEST(encode_empty, {
          char enc[1];

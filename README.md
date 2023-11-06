@@ -65,6 +65,7 @@ says hello:
 - **sha1**: SHA-1 implementation<br> [.h](modules/sha1.h) [.c](modules/sha1.c) [.test.c](modules/sha1.test.c) [wiki](https://en.wikipedia.org/wiki/Secure_Hash_Algorithms) [reference](https://www.rfc-editor.org/rfc/rfc3174)
 - **sha2**: SHA-2 implementation<br> [.h](modules/sha2.h) [.c](modules/sha2.c) [.test.c](modules/sha2.test.c) [wiki](https://en.wikipedia.org/wiki/Secure_Hash_Algorithms) [reference](https://www.rfc-editor.org/rfc/rfc6234)
 - **stopwatch**: pausable realtime frequency calculation<br> [.h](modules/stopwatch.h) [.c](modules/stopwatch.c)
+- **str**: string helpers<br> [.h](modules/str.h) [.c](modules/str.c) [.test.c](modules/str.test.c)
 - **test**: test utilities<br> [.h](modules/test.h) [.c](modules/test.c)
 - **util**: LENGTH, LIT, MAX, MIN macros<br> [.h](modules/util.h)
 - **uv**: uv error-checking<br> [.h](modules/uv.h) [reference](http://docs.libuv.org/en/v1.x/errors.html#c.uv_err_name)
