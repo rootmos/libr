@@ -1,6 +1,9 @@
 #include "str.h"
 
 #include <string.h>
+#include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 ssize_t endswith(const char* str, const char* suffix)
 {
@@ -10,12 +13,6 @@ ssize_t endswith(const char* str, const char* suffix)
     }
     return l - k;
 }
-
-#ifdef failwith
-
-#include <ctype.h>
-#include <stdio.h>
-#include <stdlib.h>
 
 long long parse_bytes(const char* str, const char** err)
 {
@@ -34,7 +31,7 @@ long long parse_bytes(const char* str, const char** err)
                 if(err) {
                     int r = snprintf(LIT(errbuf), "no digits (:%lu)", s - str);
                     if(r >= sizeof(errbuf)) {
-                        failwith("buffer overflow");
+                        return -2;
                     }
                     *err = errbuf;
                 }
@@ -61,7 +58,7 @@ long long parse_bytes(const char* str, const char** err)
             if(err) {
                 int r = snprintf(LIT(errbuf), "not a valid suffix %c (:%lu)", *s, s - str);
                 if(r >= sizeof(errbuf)) {
-                    failwith("buffer overflow");
+                    return -2;
                 }
                 *err = errbuf;
             }
@@ -69,4 +66,42 @@ long long parse_bytes(const char* str, const char** err)
         }
     }
 }
-#endif
+
+ssize_t render_bytes(char* buf, size_t len, size_t bs)
+{
+    if(bs == 0) {
+        if(len < 2) {
+            return -1;
+        }
+        return snprintf(buf, len, "0");
+    }
+
+    struct {
+        char* suffix;
+        size_t bytes;
+    } suffixes[] = {
+        { "T", (size_t)1024*1024*1024*1024 },
+        { "G", (size_t)1024*1024*1024 },
+        { "M", (size_t)1024*1024 },
+        { "K", (size_t)1024 },
+        { "", (size_t)1 },
+    };
+
+    size_t l = len;
+    char* b = buf;
+    for(size_t i = 0; i < LENGTH(suffixes); i++) {
+        if(bs >= suffixes[i].bytes) {
+            size_t q = bs / suffixes[i].bytes;
+            bs -= q * suffixes[i].bytes;
+            int r = snprintf(b, len, "%zu%s", q, suffixes[i].suffix);
+            if(r >= l) {
+                return -1;
+            }
+            b += r;
+            l -= r;
+        }
+
+    }
+
+    return len - l;
+}

@@ -101,6 +101,7 @@ description = "helpers to interpret ASCII characters"
 
 [module.str]
 description = "string helpers"
+depends = "util"
 
 [module.devnull]
 description = "/dev/null as a filedescriptor"

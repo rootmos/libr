@@ -4,6 +4,5 @@
 
 ssize_t endswith(const char* str, const char* suffix);
 
-#ifdef failwith
 long long parse_bytes(const char* str, const char** err);
-#endif
+ssize_t render_bytes(char* buf, size_t len, size_t bs);

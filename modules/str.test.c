@@ -39,4 +39,28 @@ TEST_SUITE(str, {
     TEST(parse_bytes_invalid_suffix, {
          assert(parse_bytes("1q", NULL) < 0);
     });
+
+    TEST(render_bytes_0, {
+         char buf[1024];
+         assert(render_bytes(LIT(buf), 0) == strlen(buf));
+         assert(strcmp(buf, "0") == 0);
+    });
+
+    TEST(render_bytes_1, {
+         char buf[1024];
+         assert(render_bytes(LIT(buf), 1) == strlen(buf));
+         assert(strcmp(buf, "1") == 0);
+    });
+
+    TEST(render_bytes_1K1, {
+         char buf[1024];
+         assert(render_bytes(LIT(buf), 1025) == strlen(buf));
+         assert(strcmp(buf, "1K1") == 0);
+    });
+
+    TEST(render_bytes_1M, {
+         char buf[1024];
+         assert(render_bytes(LIT(buf), 1024*1024) == strlen(buf));
+         assert(strcmp(buf, "1M") == 0);
+    });
 })
