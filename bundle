@@ -244,7 +244,7 @@ def assemble_modules(modules, output):
         f.seek(0)
         output.write(f.read())
 
-def compilation_test(src, cc=None, cflags=None, ldflags=None):
+def compilation_test(src, *srcs, cc=None, cflags=None, ldflags=None, cwd=None):
     cc = cc or "gcc"
     cflags = cflags or []
     ldflags = ldflags or []
@@ -252,12 +252,14 @@ def compilation_test(src, cc=None, cflags=None, ldflags=None):
 
     with tempfile.TemporaryDirectory() as tmp:
         out = os.path.join(tmp, "a.out")
-        cmdline = [cc] + cflags + ["-o", out] + src + ldflags
+        cmdline = [cc] + cflags + ["-o", out]
+        cmdline += src + list(srcs)
+        cmdline += ldflags
         logger.debug(f"compiling: {cmdline}")
         subprocess.run(cmdline, check=True, cwd=tmp)
 
         logger.debug(f"running: {out}")
-        subprocess.run([os.path.basename(out)], executable=out, check=True)
+        subprocess.run([os.path.basename(out)], executable=out, check=True, cwd=None)
 
 def compilation_test_modules(modules, args):
     meta = modules[0].meta
@@ -312,7 +314,7 @@ def separate_compilation_test_modules(modules, args):
             cflags += m.cflags(arch=args.arch)
             ldflags += m.ldflags(arch=args.arch)
 
-        compilation_test(src=[impl, main], ldflags=ldflags, cc=args.cc, cflags=cflags)
+        compilation_test(impl, main, ldflags=ldflags, cc=args.cc, cflags=cflags)
 
 def test_module(module, modules, args, workdir):
     logger.info(f"testing module: {module}")
@@ -358,6 +360,20 @@ def test_module(module, modules, args, workdir):
         cmdline += ["-oe"]
     logger.debug(f"running compiled binary: {cmdline}")
     subprocess.run(cmdline, check=True, cwd=workdir)
+
+    with tempfile.TemporaryDirectory() as tmp:
+        shutil.copyfile(os.path.join(workdir, hdr), os.path.join(tmp, hdr))
+
+        a_src = os.path.join(tmp, "a.c")
+        b_src = os.path.join(tmp, "b.c")
+        with open(a_src, "w") as f:
+            if gnu_source(modules):
+                f.write(f'#define _GNU_SOURCE\n')
+            f.write(f'#define {meta.implementation_guard}\n')
+            f.write(f'#include "{hdr}"\n\n')
+
+        shutil.copyfile(a_src, b_src)
+        compilation_test(a_src, b_src, ldflags=ldflags, cc=args.cc, cflags=cflags, cwd=tmp)
 
 def parse_args():
     parser = argparse.ArgumentParser(
