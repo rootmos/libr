@@ -4,9 +4,11 @@ import argparse
 import datetime
 import logging
 import os
+import random
 import re
 import shlex
 import shutil
+import string
 import subprocess
 import sys
 import tarfile
@@ -21,6 +23,10 @@ def or_list(x):
     elif not isinstance(x, list):
         return [ x ]
     return x
+
+def salt(N=5):
+    symbols = string.ascii_letters + string.digits
+    return ''.join(random.choice(symbols) for i in range(N))
 
 class PkgConfig:
     exe = "pkg-config"
@@ -199,12 +205,12 @@ def gnu_source(modules):
                     return True
     return False
 
-def assemble_modules(modules, output):
+def assemble_modules(modules, output, prefix=None):
     meta = modules[0].meta
 
     logger.debug(f"assembling modules: {' '.join(m.name for m in modules)} into {output.name}")
 
-    with tempfile.TemporaryFile() as f:
+    with tempfile.TemporaryFile(mode="w+") as f:
         when = datetime.datetime.now().astimezone().isoformat(timespec="seconds")
         version = f"{meta.version}"
         if meta.git:
@@ -214,32 +220,41 @@ def assemble_modules(modules, output):
                 version += f" ({meta.git.ref})"
 
             version += f" ({meta.git.url})"
-        f.write(f"// {meta.name} {version} ({when})\n".encode("UTF-8"))
-        f.write(f"// modules: {' '.join([m.name for m in modules])}\n\n".encode("UTF-8"))
+        f.write(f"// {meta.name} {version} ({when})\n")
+        f.write(f"// modules: {' '.join([m.name for m in modules])}\n\n")
 
-        f.write(f"#ifndef {meta.include_guard}\n".encode("UTF-8"))
-        f.write(f"#define {meta.include_guard}\n".encode("UTF-8"))
+        if prefix is not None:
+            f.write(f"#define LIBR(x) {prefix}##x\n")
+            f.write(f"#define LIBR_DEF(x) __attribute__ ((visibility (\"hidden\"))) {prefix}##x\n")
+            f.write(f"#define LIBR_VAR(x) {prefix}##x __attribute__ ((visibility (\"hidden\")))\n")
+        else:
+            f.write(f"#define LIBR(x) x\n")
+            f.write(f"#define LIBR_DEF(x) __attribute__ ((visibility (\"hidden\"))) x\n")
+            f.write(f"#define LIBR_VAR(x) x __attribute__ ((visibility (\"hidden\")))\n")
+
+        f.write(f"#ifndef {meta.include_guard}\n")
+        f.write(f"#define {meta.include_guard}\n")
         for m in modules:
-            f.write(f"\n// {meta.name}: {os.path.basename(m.hdr)}\n".encode("UTF-8"))
+            f.write(f"\n// {meta.name}: {os.path.basename(m.hdr)}\n")
             with open(m.hdr, "r") as h:
                 for l in h.readlines():
                     if l.startswith("#pragma once"):
                         continue
-                    f.write(l.encode("UTF-8"))
-        f.write(f"#endif // {meta.include_guard}\n\n".encode("UTF-8"))
+                    f.write(l)
+        f.write(f"#endif // {meta.include_guard}\n\n")
 
-        f.write(f"#ifdef {meta.implementation_guard}\n".encode("UTF-8"))
+        f.write(f"#ifdef {meta.implementation_guard}\n")
         r_include = re.compile(r'^#include\s+"[^"]+"')
         for m in modules:
             if m.src is None:
                 continue
-            f.write(f"\n// {meta.name}: {os.path.basename(m.src)}\n".encode("UTF-8"))
+            f.write(f"\n// {meta.name}: {os.path.basename(m.src)}\n")
             with open(m.src, "r") as h:
                 for l in h.readlines():
                     if r_include.match(l) or gnu_source_re.match(l):
                         continue
-                    f.write(l.encode("UTF-8"))
-        f.write(f"#endif // {meta.implementation_guard}\n".encode("UTF-8"))
+                    f.write(l)
+        f.write(f"#endif // {meta.implementation_guard}\n")
 
         f.seek(0)
         output.write(f.read())
@@ -259,7 +274,7 @@ def compilation_test(src, *srcs, cc=None, cflags=None, ldflags=None, cwd=None):
         subprocess.run(cmdline, check=True, cwd=tmp)
 
         logger.debug(f"running: {out}")
-        subprocess.run([os.path.basename(out)], executable=out, check=True, cwd=None)
+        subprocess.check_call([os.path.basename(out)], executable=out, cwd=None)
 
 def compilation_test_modules(modules, args):
     meta = modules[0].meta
@@ -267,7 +282,7 @@ def compilation_test_modules(modules, args):
 
     with tempfile.TemporaryDirectory() as tmp:
         hdr = "r.h"
-        with open(os.path.join(tmp, hdr), "wb") as f:
+        with open(os.path.join(tmp, hdr), "w") as f:
             assemble_modules(modules, f)
 
         src = os.path.join(tmp, "main.c")
@@ -293,7 +308,7 @@ def separate_compilation_test_modules(modules, args):
 
     with tempfile.TemporaryDirectory() as tmp:
         hdr = "r.h"
-        with open(os.path.join(tmp, hdr), "wb") as f:
+        with open(os.path.join(tmp, hdr), "w") as f:
             assemble_modules(modules, f)
 
         impl = os.path.join(tmp, "impl.c")
@@ -316,6 +331,33 @@ def separate_compilation_test_modules(modules, args):
 
         compilation_test(impl, main, ldflags=ldflags, cc=args.cc, cflags=cflags)
 
+def check_visibility(module, modules, args):
+    with tempfile.TemporaryDirectory() as tmp:
+        hdr = "r.h"
+        with open(os.path.join(tmp, hdr), "w") as f:
+            assemble_modules(modules, f)
+
+        src = os.path.join(tmp, "r.c")
+        lib = os.path.join(tmp, "libr.so")
+        with open(src, "w") as f:
+            if gnu_source(modules):
+                f.write(f'#define _GNU_SOURCE\n')
+            f.write(f'#define {module.meta.implementation_guard}\n')
+            f.write(f'#include "{hdr}"\n')
+
+        cmdline = [args.cc] + args.cflags
+        cmdline += ["-rdynamic", "-fPIC", "-shared", "-nostdlib"]
+        cmdline += ["-o", lib, src ]
+
+        logger.debug(f"compiling: {cmdline}")
+        subprocess.check_call(cmdline)
+
+        cmdline = [args.nm, "-D", lib]
+        logger.debug(f"running: {cmdline}")
+        symbols = subprocess.check_output(cmdline).splitlines()
+        if symbols:
+            raise RuntimeError("visible symbols", symbols)
+
 def test_module(module, modules, args, workdir):
     logger.info(f"testing module: {module}")
     if module.test is None:
@@ -327,8 +369,8 @@ def test_module(module, modules, args, workdir):
     logger.debug(f"running with test dependencies: {modules}")
 
     hdr = f"{module}.r.h"
-    with open(os.path.join(workdir, hdr), "wb") as f:
-        assemble_modules(modules, f)
+    with open(os.path.join(workdir, hdr), "w") as f:
+        assemble_modules(modules, f, prefix=f"r_{salt()}_")
 
     test_src = os.path.join(workdir, f"{module}.test.c")
     with open(test_src, "w") as f:
@@ -361,20 +403,6 @@ def test_module(module, modules, args, workdir):
     logger.debug(f"running compiled binary: {cmdline}")
     subprocess.run(cmdline, check=True, cwd=workdir)
 
-    with tempfile.TemporaryDirectory() as tmp:
-        shutil.copyfile(os.path.join(workdir, hdr), os.path.join(tmp, hdr))
-
-        a_src = os.path.join(tmp, "a.c")
-        b_src = os.path.join(tmp, "b.c")
-        with open(a_src, "w") as f:
-            if gnu_source(modules):
-                f.write(f'#define _GNU_SOURCE\n')
-            f.write(f'#define {meta.implementation_guard}\n')
-            f.write(f'#include "{hdr}"\n\n')
-
-        shutil.copyfile(a_src, b_src)
-        compilation_test(a_src, b_src, ldflags=ldflags, cc=args.cc, cflags=cflags, cwd=tmp)
-
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Single file bundler",
@@ -391,6 +419,7 @@ def parse_args():
     compilation = parser.add_argument_group('compilation')
     compilation.add_argument("-A", "--arch", default=os.getenv("ARCH", "archlinux"))
     compilation.add_argument("-c", "--cc", default=os.getenv("CC", "gcc"))
+    compilation.add_argument("--nm", default="nm")
     compilation.add_argument("--pkg-config", default=os.getenv("PKG_CONFIG", "pkg-config"))
     compilation.add_argument("--cflags", default="-Wall -Werror")
 
@@ -484,6 +513,9 @@ if __name__ == "__main__":
         compilation_test_modules(selection, args)
         separate_compilation_test_modules(selection, args)
 
+        for m in selection:
+            check_visibility(m, selection, args)
+
     if args.test:
         with tempfile.TemporaryDirectory(prefix=f"{project}-tests-") as tmp:
             when = datetime.datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
@@ -501,7 +533,7 @@ if __name__ == "__main__":
                     tar.add(workdir, arcname=fn)
 
     if args.output:
-        output = open(args.output, "wb")
+        output = open(args.output, "w")
     else:
         output = sys.stdout.buffer
     assemble_modules(selection, output=output)
