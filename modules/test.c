@@ -60,7 +60,7 @@ int test_runner(struct test_runner_opts* opts,
         failwith("buffer overflow");
     }
 
-    const char* now = now_iso8601_compact();
+    const char* now = LIBR(now_iso8601_compact)();
 
     int captured_stdout[2]; r = pipe(captured_stdout); CHECK(r, "pipe");
     int captured_stderr[2]; r = pipe(captured_stderr); CHECK(r, "pipe");

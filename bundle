@@ -221,19 +221,24 @@ def assemble_modules(modules, output, prefix=None):
 
             version += f" ({meta.git.url})"
         f.write(f"// {meta.name} {version} ({when})\n")
-        f.write(f"// modules: {' '.join([m.name for m in modules])}\n\n")
-
-        if prefix is not None:
-            f.write(f"#define LIBR(x) {prefix}##x\n")
-            f.write(f"#define LIBR_DEF(x) __attribute__ ((visibility (\"hidden\"))) {prefix}##x\n")
-            f.write(f"#define LIBR_VAR(x) {prefix}##x __attribute__ ((visibility (\"hidden\")))\n")
-        else:
-            f.write(f"#define LIBR(x) x\n")
-            f.write(f"#define LIBR_DEF(x) __attribute__ ((visibility (\"hidden\"))) x\n")
-            f.write(f"#define LIBR_VAR(x) x __attribute__ ((visibility (\"hidden\")))\n")
+        f.write(f"// modules: {' '.join([m.name for m in modules])}\n")
+        f.write(f"\n")
 
         f.write(f"#ifndef {meta.include_guard}\n")
         f.write(f"#define {meta.include_guard}\n")
+        f.write(f"\n")
+
+        if prefix is not None:
+            f.write(f"#define LIBR(x) {prefix}##x\n")
+        else:
+            f.write(f"#define LIBR(x) x\n")
+
+        f.write(f"#define PRIVATE __attribute__((visibility(\"hidden\")))\n")
+        f.write(f"#define PUBLIC __attribute__((visibility(\"default\")))\n")
+        f.write(f"#define API PRIVATE\n")
+
+        f.write(f"\n")
+
         for m in modules:
             f.write(f"\n// {meta.name}: {os.path.basename(m.hdr)}\n")
             with open(m.hdr, "r") as h:
@@ -274,6 +279,7 @@ def compilation_test(src, *srcs, cc=None, cflags=None, ldflags=None, cwd=None):
         subprocess.run(cmdline, check=True, cwd=tmp)
 
         logger.debug(f"running: {out}")
+
         subprocess.check_call([os.path.basename(out)], executable=out, cwd=None)
 
 def compilation_test_modules(modules, args):
@@ -352,7 +358,7 @@ def check_visibility(module, modules, args):
         logger.debug(f"compiling: {cmdline}")
         subprocess.check_call(cmdline)
 
-        cmdline = [args.nm, "-D", lib]
+        cmdline = [args.nm, "--dynamic", "--defined-only", lib]
         logger.debug(f"running: {cmdline}")
         symbols = subprocess.check_output(cmdline).splitlines()
         if symbols:
@@ -509,28 +515,30 @@ if __name__ == "__main__":
 
     selection = select_modules(modules, args.selection)
 
-    if args.compilation_test:
-        compilation_test_modules(selection, args)
-        separate_compilation_test_modules(selection, args)
+    tmp = tempfile.TemporaryDirectory(prefix=f"{project}-tests-")
+    when = datetime.datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
+    fn = f"{project}-tests-{when}"
+    workdir = os.path.join(tmp.name, fn)
+    os.mkdir(workdir)
+    try:
+        if args.compilation_test:
+            compilation_test_modules(selection, args)
+            separate_compilation_test_modules(selection, args)
 
-        for m in selection:
-            check_visibility(m, selection, args)
+            for m in selection:
+                check_visibility(m, selection, args)
 
-    if args.test:
-        with tempfile.TemporaryDirectory(prefix=f"{project}-tests-") as tmp:
-            when = datetime.datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
-            fn = f"{project}-tests-{when}"
-            workdir = os.path.join(tmp, fn)
-            os.mkdir(workdir)
+        if args.test:
             for m in selection:
                 if m.test:
                     test_module(m, modules, args, workdir=workdir)
-
-            if args.test_result or args.keep_test_result:
-                tr = args.test_result if args.test_result else f"{fn}.tar.gz"
-                logger.info(f"storing test results: {tr}")
-                with tarfile.open(tr, mode="x:") as tar:
-                    tar.add(workdir, arcname=fn)
+    finally:
+        if args.test_result or args.keep_test_result:
+            tr = args.test_result if args.test_result else f"{fn}.tar.gz"
+            logger.info(f"storing test results: {tr}")
+            with tarfile.open(tr, mode="x:") as tar:
+                tar.add(workdir, arcname=fn)
+        tmp.cleanup()
 
     if args.output:
         output = open(args.output, "w")

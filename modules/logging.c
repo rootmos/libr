@@ -21,7 +21,7 @@ void r_vlog(int level,
             const char* const fmt, va_list vl)
 {
     fprintf(stderr, "%s:%d:%s:%s:%u ",
-            now_iso8601_compact(), getpid(), caller, file, line);
+            LIBR(now_iso8601_compact)(), getpid(), caller, file, line);
 
     vfprintf(stderr, fmt, vl);
 }

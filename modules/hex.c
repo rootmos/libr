@@ -4,9 +4,9 @@
 
 static const char* const hex_alphabeth_upper_case = "0123456789ABCDEF";
 static const char* const hex_alphabeth_lower_case = "0123456789abcdef";
-const char* LIBR_VAR(hex_alphabeth) = hex_alphabeth_lower_case;
+const char* LIBR(hex_alphabeth) API = hex_alphabeth_lower_case;
 
-void LIBR_DEF(hex_encode)(char* enc, const void* bin, size_t l)
+API void LIBR(hex_encode)(char* enc, const void* bin, size_t l)
 {
     for(size_t i = 0; i < l; i++) {
         uint8_t b = ((uint8_t*)bin)[i];
@@ -30,7 +30,7 @@ static int_fast8_t from_hex_digit(char c)
     return -1;
 }
 
-ssize_t LIBR_DEF(hex_decode)(void* bin, const char* enc)
+API ssize_t LIBR(hex_decode)(void* bin, const char* enc)
 {
     for(size_t i = 0, j = 0;; j++) {
         if(enc[i] == 0) {
