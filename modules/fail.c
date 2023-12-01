@@ -6,20 +6,23 @@
 #include <stdio.h>
 #include <string.h>
 
-void r_failwith(const char* const caller,
-                const char* const file,
-                const unsigned int line,
-                const int include_errno,
-                const char* const fmt, ...)
+API void LIBR(failwith0)(
+    const char* const caller,
+    const char* const file,
+    const unsigned int line,
+    const int include_errno,
+    const char* const fmt, ...)
 {
     va_list vl;
     va_start(vl, fmt);
 
     if(include_errno) {
-        r_log(LOG_ERROR, caller, file, line, "(%s) ", strerror(errno));
-        vfprintf(stderr, fmt, vl);
+        LIBR(logger)(LOG_ERROR, caller, file, line, "(%s) ", strerror(errno));
+        if(vdprintf(LIBR(logger_fd), fmt, vl) < 0) {
+            abort();
+        }
     } else {
-        r_vlog(LOG_ERROR, caller, file, line, fmt, vl);
+        LIBR(vlogger)(LOG_ERROR, caller, file, line, fmt, vl);
     }
     va_end(vl);
 
