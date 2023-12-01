@@ -1,7 +1,7 @@
 #define CRC16_CCITT_POLY 0x1021
 
 // https://en.wikipedia.org/wiki/Computation_of_cyclic_redundancy_checks#Bit_ordering_(endianness)
-uint16_t crc16_ccitt(const void* msg, size_t l)
+API uint16_t LIBR(crc16_ccitt)(const void* msg, size_t l)
 {
     uint16_t crc = 0x0000;
     for(size_t i = 0; i < l; i++) {
