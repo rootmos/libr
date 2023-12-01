@@ -45,32 +45,32 @@ static void normally_distributed(float (*f)(void))
 }
 
 TEST_SUITE(xorshift, {
-    xorshift_state_initialize();
+    LIBR(xorshift_state_initialize)();
 
     TEST(xorshift64_is_uniform, {
-         uniformly_distributed(xorshift64_i);
+         uniformly_distributed(LIBR(xorshift64_i));
     });
 
     TEST(xorshift128plus_is_uniform, {
-          uniformly_distributed(xorshift128plus_i);
+          uniformly_distributed(LIBR(xorshift128plus_i));
     });
 
     TEST(normal_dist_is_normal, {
-          normally_distributed(normal_dist_i);
+          normally_distributed(LIBR(normal_dist_i));
     });
 
     TEST_ABORT(xorshift64_is_not_normal, {
-        float f() { return uniform_float(xorshift64_i()); }
+        float f() { return LIBR(uniform_float)(LIBR(xorshift64_i)()); }
         normally_distributed(f);
     });
 
     TEST_ABORT(normal_dist_is_not_uniform, {
-        uint64_t f() { return llrint(fabsf(normal_dist_i())); }
+        uint64_t f() { return llrint(fabsf(LIBR(normal_dist_i)())); }
         uniformly_distributed(f);
     });
 
     TEST_ABORT(normal_dist_test_should_respect_stddev, {
-        float f() { return 2*normal_dist_i(); }
+        float f() { return 2*LIBR(normal_dist_i)(); }
         normally_distributed(f);
     });
 })
