@@ -73,7 +73,7 @@ static const uint32_t sha2_K[] = {
     0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2,
 };
 
-void sha256_init(struct sha256_state* st_)
+API void LIBR(sha256_init)(struct sha256_state* st_)
 {
     struct sha256_state_internal* st = sha256_to_internal_state(st_);
 
@@ -133,7 +133,7 @@ static void sha256_process_block(struct sha256_state_internal* st, uint32_t bloc
     st->H[7] += h;
 }
 
-void sha256_update(struct sha256_state* st_, const void* buf, size_t len)
+API void LIBR(sha256_update)(struct sha256_state* st_, const void* buf, size_t len)
 {
     struct sha256_state_internal* st = sha256_to_internal_state(st_);
 
@@ -157,7 +157,7 @@ void sha256_update(struct sha256_state* st_, const void* buf, size_t len)
     st->len += len;
 }
 
-void sha256_finalize(struct sha256_state* st_)
+API void LIBR(sha256_finalize)(struct sha256_state* st_)
 {
     struct sha256_state_internal* st = sha256_to_internal_state(st_);
 
@@ -172,10 +172,9 @@ void sha256_finalize(struct sha256_state* st_)
     *((uint64_t*)(&buf[l])) = htobe64(st->len*8);
     buf[0] |= 0x80;
 
-    sha256_update(st_, LIT(buf));
+    LIBR(sha256_update)(st_, LIT(buf));
 
     for(size_t i = 0; i < 8; i++) {
         st->H[i] = htobe32(st->H[i]);
     }
 }
-
