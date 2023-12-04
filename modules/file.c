@@ -18,7 +18,7 @@
 #define FILE_MAX_LINES 1024
 #endif
 
-struct lines* read_lines(const char* fn)
+API struct lines* LIBR(read_lines)(const char* fn)
 {
     int fd = open(fn, O_RDONLY);
     if(fd == -1 && errno == ENOENT) {
@@ -71,7 +71,7 @@ struct lines* read_lines(const char* fn)
     return f;
 }
 
-void free_lines(struct lines* f)
+API void LIBR(free_lines)(struct lines* f)
 {
     if(f == NULL) {
         return;
@@ -81,7 +81,7 @@ void free_lines(struct lines* f)
     free(f);
 }
 
-struct wholefile* read_wholefile(const char* fn)
+API struct wholefile* LIBR(read_wholefile)(const char* fn)
 {
     int fd = open(fn, O_RDONLY);
     if(fd == -1 && errno == ENOENT) {
@@ -108,7 +108,7 @@ struct wholefile* read_wholefile(const char* fn)
     return f;
 }
 
-void free_wholefile(struct wholefile* f)
+API void LIBR(free_wholefile)(struct wholefile* f)
 {
     if(f == NULL) {
         return;
@@ -118,18 +118,18 @@ void free_wholefile(struct wholefile* f)
     free(f);
 }
 
-void writefile(const char* fn, void* buf, size_t len)
+API void LIBR(writefile)(const char* fn, void* buf, size_t len)
 {
     int fd = open(fn, O_WRONLY);
     CHECK(fd, "open(%s, O_WRONLY)", fn);
     debug("writing file: %s", fn);
 
-    writefile2(fd, buf, len);
+    LIBR(writefile2)(fd, buf, len);
 
     int r = close(fd); CHECK(r, "close");
 }
 
-void writefile2(int fd, void* buf, size_t len)
+API void LIBR(writefile2)(int fd, void* buf, size_t len)
 {
     size_t i = 0;
     while(i < len) {
