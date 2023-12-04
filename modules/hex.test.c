@@ -200,8 +200,8 @@ TEST_SUITE(hex, {
     TEST(round_trip_arbitrary_byte_string_lower, {
         LIBR(hex_alphabeth) = hex_alphabeth_lower_case;
          for(size_t i = 0; i < 100; i++) {
-             uint16_t L; random_bytes(&L, sizeof(L));
-             char bin[L]; random_bytes(bin, sizeof(bin));
+             uint16_t L; LIBR(random_bytes)(&L, sizeof(L));
+             char bin[L]; LIBR(random_bytes)(bin, sizeof(bin));
 
              char enc[HEX_ENCODED_LENGTH(sizeof(bin))];
              LIBR(hex_encode)(enc, bin, L);
@@ -216,8 +216,8 @@ TEST_SUITE(hex, {
     TEST(round_trip_arbitrary_byte_string_upper, {
         LIBR(hex_alphabeth) = hex_alphabeth_lower_case;
          for(size_t i = 0; i < 100; i++) {
-             uint16_t L; random_bytes(&L, sizeof(L));
-             char bin[L]; random_bytes(bin, sizeof(bin));
+             uint16_t L; LIBR(random_bytes)(&L, sizeof(L));
+             char bin[L]; LIBR(random_bytes)(bin, sizeof(bin));
 
              char enc[HEX_ENCODED_LENGTH(sizeof(bin))];
              LIBR(hex_encode)(enc, bin, L);
