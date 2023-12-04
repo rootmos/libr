@@ -74,7 +74,7 @@
 
 #define RLIMIT_SPEC(rl, v) (struct rlimit_spec) { .name = #rl, .resource = RLIMIT_##rl, .action = RLIMIT_ACTION_ABS, .value = v }
 
-void rlimit_default(struct rlimit_spec rlimits[], size_t len)
+API void LIBR(rlimit_default)(struct rlimit_spec rlimits[], size_t len)
 {
     struct rlimit_spec defaults[] = {
         RLIMIT_SPEC(CPU, RLIMIT_DEFAULT_CPU),
@@ -107,14 +107,14 @@ void rlimit_default(struct rlimit_spec rlimits[], size_t len)
     }
 }
 
-void rlimit_inherit(struct rlimit_spec rlimits[], size_t len)
+API void LIBR(rlimit_inherit)(struct rlimit_spec rlimits[], size_t len)
 {
     for(size_t i = 0; i < len; i++) {
         rlimits[i].action = RLIMIT_ACTION_INHERIT;
     }
 }
 
-int rlimit_parse(struct rlimit_spec rlimits[], size_t len, const char* str)
+API int LIBR(rlimit_parse)(struct rlimit_spec rlimits[], size_t len, const char* str)
 {
     debug("parsing: %s", str);
 
@@ -154,7 +154,7 @@ int rlimit_parse(struct rlimit_spec rlimits[], size_t len, const char* str)
     return 1;
 }
 
-void rlimit_apply(const struct rlimit_spec rlimits[], size_t len)
+API void LIBR(rlimit_apply)(const struct rlimit_spec rlimits[], size_t len)
 {
     debug("applying rlimits");
 

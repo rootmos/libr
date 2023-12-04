@@ -16,8 +16,8 @@ struct rlimit_spec {
     unsigned long value;
 };
 
-void rlimit_default(struct rlimit_spec rlimits[], size_t len);
-void rlimit_inherit(struct rlimit_spec rlimits[], size_t len);
+void LIBR(rlimit_default)(struct rlimit_spec rlimits[], size_t len);
+void LIBR(rlimit_inherit)(struct rlimit_spec rlimits[], size_t len);
 
-int rlimit_parse(struct rlimit_spec rlimits[], size_t len, const char* str);
-void rlimit_apply(const struct rlimit_spec rlimits[], size_t len);
+int LIBR(rlimit_parse)(struct rlimit_spec rlimits[], size_t len, const char* str);
+void LIBR(rlimit_apply)(const struct rlimit_spec rlimits[], size_t len);
