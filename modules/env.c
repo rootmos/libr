@@ -3,7 +3,7 @@
 
 #include <stdlib.h>
 
-const char* getenv_mandatory(const char* const env)
+API const char* LIBR(getenv_mandatory)(const char* const env)
 {
     const char* const v = getenv(env);
     if(v == NULL) { failwith("environment variable %s not set", env); }
