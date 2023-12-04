@@ -338,6 +338,7 @@ def separate_compilation_test_modules(modules, args):
         compilation_test(impl, main, ldflags=ldflags, cc=args.cc, cflags=cflags)
 
 def check_visibility(module, modules, args):
+    logger.info(f"checking visible symbols: {module}")
     with tempfile.TemporaryDirectory() as tmp:
         hdr = "r.h"
         with open(os.path.join(tmp, hdr), "w") as f:
