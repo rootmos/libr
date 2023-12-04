@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-ssize_t endswith(const char* str, const char* suffix)
+API ssize_t LIBR(endswith)(const char* str, const char* suffix)
 {
     size_t l = strlen(str), k = strlen(suffix);
     if(k > l || strcmp(str + l - k, suffix) != 0) {
@@ -14,7 +14,7 @@ ssize_t endswith(const char* str, const char* suffix)
     return l - k;
 }
 
-long long parse_bytes(const char* str, const char** err)
+API long long LIBR(parse_bytes)(const char* str, const char** err)
 {
     static char errbuf[128];
 
@@ -67,7 +67,7 @@ long long parse_bytes(const char* str, const char** err)
     }
 }
 
-ssize_t render_bytes(char* buf, size_t len, size_t bs)
+API ssize_t LIBR(render_bytes)(char* buf, size_t len, size_t bs)
 {
     if(bs == 0) {
         if(len < 2) {
