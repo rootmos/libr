@@ -3,7 +3,7 @@
 
 #include <fcntl.h>
 
-void set_blocking(int fd, int blocking)
+API void LIBR(set_blocking)(int fd, int blocking)
 {
     int fl = fcntl(fd, F_GETFL, 0);
     if(blocking) {
