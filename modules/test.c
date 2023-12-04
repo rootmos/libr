@@ -29,7 +29,7 @@ static void dump_captured_output(int from_fd, const char* suffix,
     r = close(out); CHECK(r, "close");
 }
 
-void test_runner_parse_options(struct test_runner_opts* o, int argc, char* argv[])
+API void LIBR(test_runner_parse_options)(struct test_runner_opts* o, int argc, char* argv[])
 {
     memset(o, 0, sizeof(*o));
 
@@ -48,11 +48,12 @@ void test_runner_parse_options(struct test_runner_opts* o, int argc, char* argv[
     }
 }
 
-int test_runner(struct test_runner_opts* opts,
-                const char* name,
-                void (*body)(void),
-                int expect_signal,
-                int expect_exit_code)
+API int LIBR(test_runner)(
+    struct test_runner_opts* opts,
+    const char* name,
+    void (*body)(void),
+    int expect_signal,
+    int expect_exit_code)
 {
     char fullname[1024];
     int r = snprintf(LIT(fullname), "%s.%s", opts->test_suite, name);
