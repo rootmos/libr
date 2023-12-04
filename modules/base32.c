@@ -4,7 +4,7 @@
 #include <string.h>
 #include <endian.h>
 
-size_t base32_encode(char* out, const void* data, size_t l)
+API size_t LIBR(base32_encode)(char* out, const void* data, size_t l)
 {
     const char* const start = out;
 
@@ -32,7 +32,7 @@ size_t base32_encode(char* out, const void* data, size_t l)
     return *out++ = 0, out - start;
 }
 
-ssize_t base32_decode(void* out, const char* data, size_t l)
+API ssize_t LIBR(base32_decode)(void* out, const char* data, size_t l)
 {
     size_t bs = 0;
     for(size_t i = 0; l && *data && *data != '='; l -= i, data += i, i = 0) {

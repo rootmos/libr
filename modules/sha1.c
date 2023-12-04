@@ -56,7 +56,7 @@ static uint32_t sha1_S(uint32_t X, int n)
     return (X << n) | (X >> (32-n));
 }
 
-void sha1_init(struct sha1_state* st_)
+API void LIBR(sha1_init)(struct sha1_state* st_)
 {
     struct sha1_state_internal* st = sha1_to_internal_state(st_);
 
@@ -99,7 +99,7 @@ static void sha1_process_block(struct sha1_state_internal* st, uint32_t block[16
     st->H[4] += E;
 }
 
-void sha1_update(struct sha1_state* st_, const void* buf, size_t len)
+API void LIBR(sha1_update)(struct sha1_state* st_, const void* buf, size_t len)
 {
     struct sha1_state_internal* st = sha1_to_internal_state(st_);
 
@@ -123,7 +123,7 @@ void sha1_update(struct sha1_state* st_, const void* buf, size_t len)
     st->len += len;
 }
 
-void sha1_finalize(struct sha1_state* st_)
+API void LIBR(sha1_finalize)(struct sha1_state* st_)
 {
     struct sha1_state_internal* st = sha1_to_internal_state(st_);
 
@@ -138,7 +138,7 @@ void sha1_finalize(struct sha1_state* st_)
     *((uint64_t*)(&buf[l])) = htobe64(st->len*8);
     buf[0] |= 0x80;
 
-    sha1_update(st_, LIT(buf));
+    LIBR(sha1_update)(st_, LIT(buf));
 
     for(size_t i = 0; i < 5; i++) {
         st->H[i] = htobe32(st->H[i]);

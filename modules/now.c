@@ -3,7 +3,7 @@
 #include <time.h>
 #include <stdlib.h>
 
-const char* now_iso8601_compact(void)
+PRIVATE const char* LIBR(now_iso8601_compact)(void)
 {
     static char buf[17];
     const time_t t = time(NULL);

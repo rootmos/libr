@@ -2,7 +2,6 @@
 #include "fail.h"
 #include "logging.h"
 
-#include <assert.h>
 #include <time.h>
 #include <stdlib.h>
 
@@ -17,7 +16,7 @@ struct stopwatch {
     size_t ticks;
 };
 
-void stopwatch_reset(struct stopwatch* const s)
+API void LIBR(stopwatch_reset)(struct stopwatch* const s)
 {
     s->running = 0;
     s->ticks = 0;
@@ -25,24 +24,26 @@ void stopwatch_reset(struct stopwatch* const s)
     s->t = (struct timespec){ 0 };
 }
 
-struct stopwatch* stopwatch_mk(const char* const what,
-                               const size_t period)
+API struct stopwatch* LIBR(stopwatch_mk)(
+    const char* const what,
+    const size_t period)
 {
-    struct stopwatch* s = calloc(sizeof(*s), 1); assert(s);
+    struct stopwatch* s = calloc(sizeof(*s), 1);
+    CHECK_MALLOC(s);
     s->what = what;
     s->period = period;
 
-    stopwatch_reset(s);
+    LIBR(stopwatch_reset)(s);
     return s;
 }
 
-void stopwatch_free(struct stopwatch* const s)
+API void LIBR(stopwatch_free)(struct stopwatch* const s)
 {
     free(s);
 }
 
 
-void stopwatch_tick(struct stopwatch* const s)
+API void LIBR(stopwatch_tick)(struct stopwatch* const s)
 {
     if(++s->ticks == s->period)
     {
@@ -55,7 +56,7 @@ void stopwatch_tick(struct stopwatch* const s)
     }
 }
 
-void stopwatch_start(struct stopwatch* const s)
+API void LIBR(stopwatch_start)(struct stopwatch* const s)
 {
     if(!s->running) {
         int r = clock_gettime(CLOCK_MONOTONIC_RAW, &s->t);
@@ -65,7 +66,7 @@ void stopwatch_start(struct stopwatch* const s)
     }
 }
 
-void stopwatch_stop(struct stopwatch* const s)
+API void LIBR(stopwatch_stop)(struct stopwatch* const s)
 {
     if(s->running) {
         s->intervals++;
@@ -79,5 +80,5 @@ void stopwatch_stop(struct stopwatch* const s)
         s->acc.tv_nsec += now.tv_nsec - s->t.tv_nsec;
     }
 
-    stopwatch_tick(s);
+    LIBR(stopwatch_tick)(s);
 }

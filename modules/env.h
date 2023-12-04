@@ -1,3 +1,3 @@
 #pragma once
 
-const char* getenv_mandatory(const char* const env);
+const char* LIBR(getenv_mandatory)(const char* const env);

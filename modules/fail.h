@@ -7,9 +7,9 @@
 
 #define CHECK_IF(cond, format, ...) do { \
     if(cond) { \
-        r_failwith(__extension__ __FUNCTION__, __extension__ __FILE__, \
-                   __extension__ __LINE__, 1, \
-                   format "\n", ##__VA_ARGS__); \
+        LIBR(failwith0)(__extension__ __FUNCTION__, __extension__ __FILE__, \
+            __extension__ __LINE__, 1, \
+            format "\n", ##__VA_ARGS__); \
     } \
 } while(0)
 
@@ -17,14 +17,15 @@
 #define CHECK_MMAP(x) CHECK_NOT(x, MAP_FAILED, "memory mapping failed")
 
 #define failwith(format, ...) \
-    r_failwith(__extension__ __FUNCTION__, __extension__ __FILE__, \
-               __extension__ __LINE__, 0, format "\n", ##__VA_ARGS__)
+    LIBR(failwith0)(__extension__ __FUNCTION__, __extension__ __FILE__, \
+        __extension__ __LINE__, 0, format "\n", ##__VA_ARGS__)
 
-#define not_implemented() failwith("not implemented")
+#define not_implemented() LIBR(failwith0)("not implemented")
 
-void r_failwith(const char* const caller,
-                const char* const file,
-                const unsigned int line,
-                const int include_errno,
-                const char* const fmt, ...)
-    __attribute__ ((noreturn, format (printf, 5, 6)));
+void LIBR(failwith0)(
+    const char* const caller,
+    const char* const file,
+    const unsigned int line,
+    const int include_errno,
+    const char* const fmt, ...)
+__attribute__ ((noreturn, format (printf, 5, 6)));

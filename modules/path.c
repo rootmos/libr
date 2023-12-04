@@ -5,7 +5,7 @@
 #include <sys/stat.h>
 #include <limits.h>
 
-size_t path_joinv(char* buf, size_t L, const char* p0, va_list ps)
+API size_t LIBR(path_joinv)(char* buf, size_t L, const char* p0, va_list ps)
 {
     size_t n = strlen(p0);
     if(n < L) {
@@ -35,18 +35,18 @@ size_t path_joinv(char* buf, size_t L, const char* p0, va_list ps)
     return n;
 }
 
-size_t path_join(char* buf, size_t L, const char* p0, ...)
+API size_t LIBR(path_join)(char* buf, size_t L, const char* p0, ...)
 {
     va_list ps; va_start(ps, p0);
-    size_t n = path_joinv(buf, L, p0, ps);
+    size_t n = LIBR(path_joinv)(buf, L, p0, ps);
     return va_end(ps), n;
 }
 
 #ifdef failwith
-const char* path_joinvs(const char* p0, va_list ps)
+API const char* LIBR(path_joinvs)(const char* p0, va_list ps)
 {
     static char buf[PATH_MAX];
-    size_t l = path_joinv(buf, sizeof(buf), p0, ps);
+    size_t l = LIBR(path_joinv)(buf, sizeof(buf), p0, ps);
     if(l >= sizeof(buf)) {
         failwith("buffer overflow");
     }
@@ -54,15 +54,15 @@ const char* path_joinvs(const char* p0, va_list ps)
     return buf;
 }
 
-const char* path_joins(const char* p0, ...)
+API const char* LIBR(path_joins)(const char* p0, ...)
 {
     va_list ps; va_start(ps, p0);
-    const char* p = path_joinvs(p0, ps);
+    const char* p = LIBR(path_joinvs)(p0, ps);
     return va_end(ps), p;
 }
 #endif
 
-int makedirs(const char* path, mode_t mode)
+API int LIBR(makedirs)(const char* path, mode_t mode)
 {
     const size_t L = strlen(path);
     char buf[L+1];

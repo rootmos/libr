@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-void hexdump(int fd, void* buf, size_t l)
+API void LIBR(hexdump)(int fd, void* buf, size_t l)
 {
     uint8_t* p = buf;
     for(int i = 0; i < l; i++) {

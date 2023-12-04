@@ -1,3 +1,3 @@
 #pragma once
 
-void set_blocking(int fd, int blocking);
+void LIBR(set_blocking)(int fd, int blocking);

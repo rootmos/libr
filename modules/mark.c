@@ -16,7 +16,7 @@ struct mark {
     size_t check_period;
 };
 
-void mark_set(struct mark* const m)
+API void LIBR(mark_set)(struct mark* const m)
 {
     int r = clock_gettime(CLOCK_MONOTONIC_RAW, &m->t);
     CHECK(r, "clock_gettime(CLOCK_MONOTONIC_RAW, ..)");
@@ -24,10 +24,11 @@ void mark_set(struct mark* const m)
     m->count = 0;
 }
 
-struct mark* mark_init(const char* const what,
-                       const double factor,
-                       const char* const unit,
-                       const size_t check_period)
+API struct mark* LIBR(mark_init)(
+    const char* const what,
+    const double factor,
+    const char* const unit,
+    const size_t check_period)
 {
     struct mark* m = (struct mark*)calloc(sizeof(*m), 1); assert(m);
     m->what = what;
@@ -39,12 +40,12 @@ struct mark* mark_init(const char* const what,
     return m;
 }
 
-void mark_free(struct mark* const m)
+API void LIBR(mark_free)(struct mark* const m)
 {
     free(m);
 }
 
-void mark_tick(struct mark* const m)
+API void LIBR(mark_tick)(struct mark* const m)
 {
     m->count += 1;
 
