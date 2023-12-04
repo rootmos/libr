@@ -34,7 +34,7 @@ static inline int landlock_restrict_self(const int ruleset_fd,
 }
 #endif
 
-int landlock_abi_version(void)
+API int LIBR(landlock_abi_version)(void)
 {
     int r = landlock_create_ruleset(
         NULL, 0, LANDLOCK_CREATE_RULESET_VERSION);
@@ -45,7 +45,7 @@ int landlock_abi_version(void)
     }
 }
 
-int landlock_new_ruleset(void)
+API int LIBR(landlock_new_ruleset)(void)
 {
     struct landlock_ruleset_attr rs = {
         .handled_access_fs =
@@ -71,7 +71,7 @@ int landlock_new_ruleset(void)
     return rsfd;
 }
 
-void landlock_allow(int rsfd, const char* path, __u64 allowed_access)
+API void LIBR(landlock_allow)(int rsfd, const char* path, __u64 allowed_access)
 {
     struct landlock_path_beneath_attr pb = {
         .allowed_access = allowed_access,
@@ -86,16 +86,16 @@ void landlock_allow(int rsfd, const char* path, __u64 allowed_access)
     r = close(pb.parent_fd); CHECK(r, "close(%s)", path);
 }
 
-void landlock_allow_read(int rsfd, const char* path)
+API void LIBR(landlock_allow_read)(int rsfd, const char* path)
 {
-    landlock_allow(rsfd, path,
+    LIBR(landlock_allow)(rsfd, path,
         LANDLOCK_ACCESS_FS_READ_FILE
     );
 }
 
-void landlock_allow_read_write(int rsfd, const char* path)
+API void LIBR(landlock_allow_read_write)(int rsfd, const char* path)
 {
-    landlock_allow(rsfd, path,
+    LIBR(landlock_allow)(rsfd, path,
         LANDLOCK_ACCESS_FS_READ_FILE
       | LANDLOCK_ACCESS_FS_WRITE_FILE
       | LANDLOCK_ACCESS_FS_MAKE_REG
@@ -103,7 +103,7 @@ void landlock_allow_read_write(int rsfd, const char* path)
     );
 }
 
-void landlock_apply(int fd)
+API void LIBR(landlock_apply)(int fd)
 {
     int r = landlock_restrict_self(fd, 0);
     CHECK(r, "landlock_restrict_self");
