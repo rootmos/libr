@@ -68,7 +68,11 @@ man = 'seccomp(2)'
 description = "Lua error checking and stack helpers"
 reference = 'https://www.lua.org/manual/5.4/manual.html#4.4'
 depends = [ "fail", "util" ]
-pkg = { archlinux = "lua", ubuntu2204 = "lua54" }
+
+[[module.lua.pkg]]
+archlinux = "lua"
+ubuntu2204 = "lua54"
+ubuntu2404 = "lua54"
 
 [module.uv]
 description = "uv error-checking"
