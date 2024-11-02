@@ -20,7 +20,7 @@
     LIBR(failwith0)(__extension__ __FUNCTION__, __extension__ __FILE__, \
         __extension__ __LINE__, 0, format "\n", ##__VA_ARGS__)
 
-#define not_implemented() LIBR(failwith0)("not implemented")
+#define not_implemented() do { failwith("not implemented"); } while(0)
 
 void LIBR(failwith0)(
     const char* const caller,
