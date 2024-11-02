@@ -517,7 +517,7 @@ if __name__ == "__main__":
     selection = select_modules(modules, args.selection)
 
     tmp = tempfile.TemporaryDirectory(prefix=f"{project}-tests-")
-    when = datetime.datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
+    when = datetime.datetime.now(datetime.UTC).strftime("%Y%m%dT%H%M%SZ")
     fn = f"{project}-tests-{when}"
     workdir = os.path.join(tmp.name, fn)
     os.mkdir(workdir)
