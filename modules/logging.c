@@ -5,11 +5,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-#ifdef __cplusplus
 API void LIBR(dummy)(...)
-#else
-API void LIBR(dummy)()
-#endif
 {
     abort();
 }

@@ -20,11 +20,7 @@ extern int LIBR(logger_fd);
           __extension__ __LINE__, format "\n", ##__VA_ARGS__); \
 } while(0)
 
-#ifdef __cplusplus
 void LIBR(dummy)(...);
-#else
-void LIBR(dummy)();
-#endif
 
 #if LOG_LEVEL >= LOG_ERROR
 #define error(format, ...) __r_log(LOG_ERROR, format, ##__VA_ARGS__)
