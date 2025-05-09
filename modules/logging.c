@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-API void LIBR(dummy)(...)
+API void LIBR(dummy)(int foo, ...)
 {
     abort();
 }

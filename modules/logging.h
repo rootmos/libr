@@ -20,36 +20,36 @@ extern int LIBR(logger_fd);
           __extension__ __LINE__, format "\n", ##__VA_ARGS__); \
 } while(0)
 
-void LIBR(dummy)(...);
+API void LIBR(dummy)(int foo, ...);
 
 #if LOG_LEVEL >= LOG_ERROR
 #define error(format, ...) __r_log(LOG_ERROR, format, ##__VA_ARGS__)
 #else
-#define error(format, ...) do { if(0) LIBR(dummy)(__VA_ARGS__); } while(0)
+#define error(format, ...) do { if(0) LIBR(dummy)(0, ##__VA_ARGS__); } while(0)
 #endif
 
 #if LOG_LEVEL >= LOG_WARNING
 #define warning(format, ...) __r_log(LOG_WARNING, format, ##__VA_ARGS__)
 #else
-#define warning(format, ...) do { if(0) LIBR(dummy)(__VA_ARGS__); } while(0)
+#define warning(format, ...) do { if(0) LIBR(dummy)(0, ##__VA_ARGS__); } while(0)
 #endif
 
 #if LOG_LEVEL >= LOG_INFO
 #define info(format, ...) __r_log(LOG_INFO, format, ##__VA_ARGS__)
 #else
-#define info(format, ...) do { if(0) LIBR(dummy)(__VA_ARGS__); } while(0)
+#define info(format, ...) do { if(0) LIBR(dummy)(0, ##__VA_ARGS__); } while(0)
 #endif
 
 #if LOG_LEVEL >= LOG_DEBUG
 #define debug(format, ...) __r_log(LOG_DEBUG, format, ##__VA_ARGS__)
 #else
-#define debug(format, ...) do { if(0) LIBR(dummy)(__VA_ARGS__); } while(0)
+#define debug(format, ...) do { if(0) LIBR(dummy)(0, ##__VA_ARGS__); } while(0)
 #endif
 
 #if LOG_LEVEL >= LOG_TRACE
 #define trace(format, ...) __r_log(LOG_TRACE, format, ##__VA_ARGS__)
 #else
-#define trace(format, ...) do { if(0) LIBR(dummy)(__VA_ARGS__); } while(0)
+#define trace(format, ...) do { if(0) LIBR(dummy)(0, ##__VA_ARGS__); } while(0)
 #endif
 
 void LIBR(logger)(
