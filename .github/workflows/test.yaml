@@ -5,28 +5,35 @@ on:
     - cron: "0 0 7 * *"
 
 jobs:
-  ubuntu:
+  build-and-test:
     strategy:
       matrix:
-        image: [ "ubuntu:latest", "ubuntu:22.04", "archlinux:latest" ]
+        os:
+        - image: "ubuntu:24.04"
+          arch: "ubuntu2404"
+        - image: "ubuntu:22.04"
+          arch: "ubuntu2204"
+        - image: "archlinux:latest"
+          arch: "archlinux"
     runs-on: ubuntu-latest
     container:
-      image: ${{ matrix.image }}
+      image: ${{ matrix.os.image }}
+    env:
+      ARCH: ${{ matrix.os.arch }}
     steps:
     - name: Checkout the prepare.sh script
       uses: actions/checkout@v4
       with:
-        fetch-depth: 1
-        sparse-checkout: .github/prepare.sh
+        sparse-checkout: prepare.sh
         sparse-checkout-cone-mode: false
 
     - name: Prepare and install dependencies
-      run: .github/prepare.sh -u | tee -a "$GITHUB_ENV"
+      run: |
+          ./prepare.sh -u
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
     - name: Check out repository code
       uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
 
     - name: Run tests
       run: make test

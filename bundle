@@ -13,7 +13,17 @@ import subprocess
 import sys
 import tarfile
 import tempfile
-import toml
+
+try:
+    import tomllib
+    def load_toml(path):
+        with open(path, "rb") as f:
+            return tomllib.load(f)
+except ImportError:
+    import toml
+    def load_toml(path):
+        with open(path, "r") as f:
+            return toml.load(f)
 
 project = "libr"
 
@@ -123,7 +133,7 @@ class GitInfo:
 
         p = subprocess.run([GitInfo.GIT, "-C", target, "rev-parse", "--show-toplevel"], capture_output=True, text=True)
         if p.returncode != 0:
-            logger.warn(f"unable to figure out git context: {p.stderr}")
+            logger.warning(f"unable to figure out git context: {p.stderr}")
             return None
         root = p.stdout.splitlines()[0]
         logger.debug(f"git root: {root}")
@@ -368,7 +378,7 @@ def check_visibility(module, modules, args):
 def test_module(module, modules, args, workdir):
     logger.info(f"testing module: {module}")
     if module.test is None:
-        logger.warn("no tests available")
+        logger.warning("no tests available")
         return
 
     meta = module.meta
@@ -476,10 +486,9 @@ if __name__ == "__main__":
 
     PkgConfig.exe = args.pkg_config
 
-    with open(os.path.join(args.root, f"{project}.toml"), "r") as f:
-        spec = toml.load(f)
-        logger.debug(f"spec: {spec}")
-        modules = load_modules(spec, args)
+    spec = load_toml(os.path.join(args.root, f"{project}.toml"))
+    logger.debug(f"spec: {spec}")
+    modules = load_modules(spec, args)
 
     if args.list_names_only:
         if args.selection:
@@ -517,7 +526,7 @@ if __name__ == "__main__":
     selection = select_modules(modules, args.selection)
 
     tmp = tempfile.TemporaryDirectory(prefix=f"{project}-tests-")
-    when = datetime.datetime.now(datetime.UTC).strftime("%Y%m%dT%H%M%SZ")
+    when = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     fn = f"{project}-tests-{when}"
     workdir = os.path.join(tmp.name, fn)
     os.mkdir(workdir)

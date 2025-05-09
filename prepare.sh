@@ -41,10 +41,9 @@ if [ "$DISTRO" = "Arch" ] || command -v pacman >/dev/null; then
     PKGs+=(make gcc pkgconf)
     PKGs+=(python)
     PKGs+=(lua)
+    PKGs+=(gsl)
 
     $SUDO pacman -S --noconfirm "${PKGs[@]}" 1>&2
-
-    echo "ARCH=archlinux"
 elif [ "$DISTRO" = "Ubuntu" ] || command -v apt-get >/dev/null; then
     if [ -n "$UPDATE" ]; then
         $SUDO apt-get update 1>&2
@@ -58,8 +57,6 @@ elif [ "$DISTRO" = "Ubuntu" ] || command -v apt-get >/dev/null; then
     $SUDO apt-get install --yes \
         --no-install-recommends --no-install-suggests \
         1>&2  "${PKGs[@]}"
-
-    echo "ARCH=ubuntu$(lsb_release -s | tr -d '.')"
 else
     echo "unconfigured distribution: $DISTRO" 1>&2
     exit 1
