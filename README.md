@@ -7,9 +7,9 @@ bundled as a [single-file library](https://github.com/nothings/stb).
 ## Usage
 Select a few modules: from the list below or run `bundle -l` to list the
 available modules.
-For instance: `fail` and `logging`:
+For instance with the  `fail` and `logging` modules:
 ```shell
-~/git/libr/bundle --output=r.h fail logging
+./bundle --output=r.h fail logging
 ```
 Then `hello.c` can check for errors and do logging:
 ```c
@@ -40,6 +40,14 @@ gcc -DLOG_LEVEL=LOG_INFO -o hello hello.c
 says hello:
 ```
 20230906T105013Z:1530871:main:hello.c:10 hello libr world!
+```
+
+### Deployment
+In your project's `Makefile`:
+```make
+LIBR = fail logging
+r.h:
+	wget -O- https://raw.githubusercontent.com/rootmos/libr/refs/heads/master/bundle | python - --clone --output=$@ $(LIBR)
 ```
 
 ## Modules

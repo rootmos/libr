@@ -25,7 +25,8 @@ except ImportError:
         with open(path, "r") as f:
             return toml.load(f)
 
-project = "libr"
+PROJECT = "libr"
+PROJECT_URL = "https://github.com/rootmos/libr"
 
 def or_list(x):
     if x is None:
@@ -126,6 +127,7 @@ class GitInfo:
             self.url = upstream
         logger.debug(f"git url: {self.url}")
 
+    @staticmethod
     def make(target):
         if not shutil.which(GitInfo.GIT):
             logger.debug("git not available")
@@ -426,6 +428,8 @@ def parse_args():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
 
+    parser.add_argument("-c", "--clone", action="store_true")
+
     parser.add_argument("--log", default=os.environ.get("LOG_LEVEL", "INFO"), help="set log level")
 
     paths = parser.add_argument_group('paths')
@@ -435,7 +439,7 @@ def parse_args():
 
     compilation = parser.add_argument_group('compilation')
     compilation.add_argument("-A", "--arch", default=os.getenv("ARCH", "archlinux"))
-    compilation.add_argument("-c", "--cc", default=os.getenv("CC", "gcc"))
+    compilation.add_argument("--cc", default=os.getenv("CC", "gcc"))
     compilation.add_argument("--nm", default="nm")
     compilation.add_argument("--pkg-config", default=os.getenv("PKG_CONFIG", "pkg-config"))
     compilation.add_argument("--cflags", default="-Wall -Werror")
@@ -462,10 +466,9 @@ def parse_args():
 
     return args
 
-logger = None
+logger = logging.getLogger("bundle")
 def setup_logger(level):
-    l = logging.getLogger("bundle")
-    l.setLevel(level)
+    logger.setLevel(level)
 
     ch = logging.StreamHandler()
     ch.setLevel(level)
@@ -475,18 +478,12 @@ def setup_logger(level):
         datefmt="%Y-%m-%dT%H:%M:%S%z")
     ch.setFormatter(f)
 
-    l.addHandler(ch)
+    logger.addHandler(ch)
 
-    return l
-
-if __name__ == "__main__":
-    args = parse_args()
-    logger = setup_logger(args.log.upper())
-    logger.debug(f"args: {args}")
-
+def run(args):
     PkgConfig.exe = args.pkg_config
 
-    spec = load_toml(os.path.join(args.root, f"{project}.toml"))
+    spec = load_toml(os.path.join(args.root, f"{PROJECT}.toml"))
     logger.debug(f"spec: {spec}")
     modules = load_modules(spec, args)
 
@@ -525,9 +522,9 @@ if __name__ == "__main__":
 
     selection = select_modules(modules, args.selection)
 
-    tmp = tempfile.TemporaryDirectory(prefix=f"{project}-tests-")
+    tmp = tempfile.TemporaryDirectory(prefix=f"{PROJECT}-tests-")
     when = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    fn = f"{project}-tests-{when}"
+    fn = f"{PROJECT}-tests-{when}"
     workdir = os.path.join(tmp.name, fn)
     os.mkdir(workdir)
     try:
@@ -555,3 +552,32 @@ if __name__ == "__main__":
     else:
         output = sys.stdout.buffer
     assemble_modules(selection, output=output)
+
+def main():
+    args = parse_args()
+    setup_logger(args.log.upper())
+    logger.debug(f"args: {args}")
+
+    if not args.clone:
+        return run(args)
+
+    if args.output is not None:
+        path = os.path.realpath(args.output)
+        logger.debug("resolved: %s -> %s", args.output, path)
+        args.output = path
+
+    with tempfile.TemporaryDirectory(prefix=f"{PROJECT}-") as tmp:
+        args.root = os.path.join(tmp, PROJECT)
+        args.modules = os.path.join(args.root, "modules")
+
+        git = shutil.which("git")
+        assert git is not None
+        cmdline = [ git, "clone", "--depth=1", PROJECT_URL, args.root ]
+        logger.debug("running: %s", cmdline)
+        subprocess.check_call(cmdline)
+
+        os.chdir(args.root)
+        return run(args)
+
+if __name__ == "__main__":
+    main()
